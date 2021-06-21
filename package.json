@@ -3,6 +3,15 @@
     "version": "0.0.1",
     "description": "This library allows you to test speed with Netflix's Fast.com site.",
     "main": "dist/index.js",
+    "scripts": {
+        "test": "jest --config jestconfig.json",
+        "prepare": "npm run build",
+        "prepublishOnly": "npm test && npm run lint",
+        "preversion": "npm run lint",
+        "build": "tsc",
+        "version": "npm run format && git add -A src",
+        "postversion": "git push && git push --tags"
+    },
     "author": "Karel Krýda",
     "types": "dist/index.d.ts",
     "files": [
@@ -11,5 +20,11 @@
     "dependencies": {
         "@samuelpoulin/convert-units": "^2.3.7",
         "puppeteer": "^10.0.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^26.0.23",
+        "jest": "^27.0.4",
+        "ts-jest": "^27.0.3",
+        "typescript": "^4.3.4"
     }
 }
