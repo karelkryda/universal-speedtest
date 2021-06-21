@@ -62,7 +62,7 @@ export class FastAPI {
 	 * Function to run speed test.
 	 * @returns Promise
 	 */
-	async runTest() {
+	public runTest(): Promise<SpeedTestResult> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const browser = await this.launchBrowser();
@@ -131,13 +131,28 @@ export type UNITS =
 	| "Mbps"
 	| "Gbps";
 
+export interface SpeedTestResult {
+	/** Network ping. */
+	ping: Number,
+	/** Network download speed. */
+	downloadSpeed: Number,
+	/** Network upload speed. */
+	uploadSpeed: Number,
+	/** Network ping unit. */
+	pingUnit: string,
+	/** Network download speed unit. */
+	downloadUnit: string,
+	/** Network upload speed unit. */
+	uploadUnit: string,
+}
+
 export interface FastAPIOptions {
-	/** The array of nodes to connect to. */
+	/** To wait for the upload speed result. */
 	measureUpload?: boolean;
-	/** The client ID to use. */
+	/** The resulting unit of upload speed. */
 	uploadUnit?: string;
-	/** Value to use for the `Client-Name` header. */
+	/** The resulting unit of download speed. */
 	downloadUnit?: string;
-	/** The shard count. */
+	/** Limit how long the speed test can run. */
 	timeout?: number;
 }
