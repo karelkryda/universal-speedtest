@@ -1,14 +1,25 @@
-import puppeteer = require("puppeteer");
-import os = require("os");
+import PCR = require("puppeteer-chromium-resolver");
 import { convertUnits } from "./Utils";
 
 const AVAILABLE_UNITS = ["Bps", "KBps", "MBps", "GBps", "bps", "Kbps", "Mbps", "Gbps"];
+const option = {
+	revision: "",
+	detectionPath: "",
+	folderName: ".chromium-browser-snapshots",
+	defaultHosts: ["https://storage.googleapis.com", "https://npm.taobao.org/mirrors"],
+	hosts: [],
+	cacheRevisions: 2,
+	retry: 3,
+	silent: false
+};
 
 /**
  * Check if parameters are valid
  * @param options 
  */
 function check(options: FastAPIOptions) {
+	if (!options) throw new TypeError("FastAPIOptions must not be empty.");
+
 	if (
 		typeof options.measureUpload !== "undefined" &&
 		typeof options.measureUpload !== "boolean"
@@ -48,14 +59,15 @@ export class FastAPI {
 	 * @param options
 	 */
 	constructor(options: FastAPIOptions) {
-		if (options) check(options);
+		check(options);
 
 		this.options = {
-			measureUpload: options.measureUpload || false,
-			uploadUnit: AVAILABLE_UNITS.find((u) => u === options.uploadUnit) ?? "Mbps",
-			downloadUnit: AVAILABLE_UNITS.find((u) => u === options.downloadUnit) ?? "Mbps",
-			timeout: options.timeout || 30000,
-		}
+			measureUpload: false,
+			uploadUnit: "Mbps",
+			downloadUnit: "Mbps",
+			timeout: 40000,
+			...options,
+		};
 	}
 
 	/**
@@ -63,60 +75,47 @@ export class FastAPI {
 	 * @returns Promise
 	 */
 	public runTest(): Promise<SpeedTestResult> {
-		return new Promise(async (resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			try {
-				const browser = await this.launchBrowser();
-				const page = await browser.newPage();
-				await page.goto("https://fast.com");
-				await page.waitForSelector("#speed-value.succeeded", { timeout: this.options.timeout });
-				if (this.options.measureUpload) await page.waitForSelector("#upload-value.succeeded", { timeout: this.options.timeout });
+				PCR(option).then(async (stats) => {
+					const browser = await stats.puppeteer.launch({ executablePath: stats.executablePath, args: ["--no-sandbox"] });
+					const page = await browser.newPage();
+					await page.goto("https://fast.com");
+					await page.waitForSelector("#speed-value.succeeded", { timeout: this.options.timeout });
+					if (this.options.measureUpload) await page.waitForSelector("#upload-value.succeeded", { timeout: this.options.timeout });
 
-				const result = await page.evaluate(() => {
-					const $ = document.querySelector.bind(document);
+					const result = await page.evaluate(() => {
+						const $ = document.querySelector.bind(document);
 
-					return {
-						ping: Number($("#latency-value").textContent),
-						downloadSpeed: Number($("#speed-value").textContent),
-						uploadSpeed: Number($("#upload-value").textContent),
-						pingUnit: $("#latency-units").textContent.trim(),
-						downloadUnit: $("#speed-units").textContent.trim(),
-						uploadUnit: $("#upload-units").textContent.trim(),
-					};
-				});
+						return {
+							ping: Number($("#latency-value").textContent),
+							downloadSpeed: Number($("#speed-value").textContent),
+							uploadSpeed: Number($("#upload-value").textContent),
+							pingUnit: $("#latency-units").textContent.trim(),
+							downloadUnit: $("#speed-units").textContent.trim(),
+							uploadUnit: $("#upload-units").textContent.trim(),
+						};
+					});
 
-				if (result.downloadUnit !== this.options.downloadUnit) {
-					const newData = convertUnits(result.downloadUnit, this.options.downloadUnit, result.downloadSpeed);
-					result.downloadSpeed = Number(newData[0]);
-					result.downloadUnit = newData[1];
-				}
-				if (result.uploadUnit !== this.options.uploadUnit) {
-					const newData = convertUnits(result.uploadUnit, this.options.uploadUnit, result.uploadSpeed);
-					result.uploadSpeed = Number(newData[0]);
-					result.uploadUnit = newData[1];
-				}
+					if (result.downloadUnit !== this.options.downloadUnit) {
+						const newSpeed = convertUnits(result.downloadUnit, this.options.downloadUnit, result.downloadSpeed);
+						result.downloadSpeed = newSpeed;
+						result.downloadUnit = this.options.downloadUnit;
+					}
+					if (result.uploadUnit !== this.options.uploadUnit) {
+						const newSpeed = convertUnits(result.uploadUnit, this.options.uploadUnit, result.uploadSpeed);
+						result.uploadSpeed = newSpeed;
+						result.uploadUnit = this.options.uploadUnit;
+					}
 
-				resolve(result);
+					await browser.close();
+
+					resolve(result);
+				}).catch(reject);
 			} catch (error) {
 				reject(error);
 			}
 		});
-	}
-
-	/**
-	 * Function to lauch Puppeteer browser.
-	 * This function will pick correct ```executablePath``` for Linux
-	 * @returns Puppeteer browser
-	 */
-	private async launchBrowser() {
-		const osPlatform = os.platform(); // possible values are: 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
-
-		let executablePath: string;
-		if (/^win/i.test(osPlatform))
-			executablePath = "";
-		else if (/^linux/i.test(osPlatform))
-			executablePath = "/usr/bin/google-chrome";
-
-		return await puppeteer.launch({ executablePath, args: ["--no-sandbox"] });
 	}
 }
 
