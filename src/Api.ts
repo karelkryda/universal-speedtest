@@ -1,17 +1,8 @@
-import PCR = require("puppeteer-chromium-resolver");
 import { convertUnits } from "./Utils";
+import puppeteer = require("puppeteer");
+import chromium = require('chromium');
 
 const AVAILABLE_UNITS = ["Bps", "KBps", "MBps", "GBps", "bps", "Kbps", "Mbps", "Gbps"];
-const option = {
-	revision: "",
-	detectionPath: "",
-	folderName: ".chromium-browser-snapshots",
-	defaultHosts: ["https://storage.googleapis.com", "https://npm.taobao.org/mirrors"],
-	hosts: [],
-	cacheRevisions: 2,
-	retry: 3,
-	silent: false
-};
 
 /**
  * Check if parameters are valid
@@ -77,8 +68,7 @@ export class FastAPI {
 	public runTest(): Promise<SpeedTestResult> {
 		return new Promise((resolve, reject) => {
 			try {
-				PCR(option).then(async (stats) => {
-					const browser = await stats.puppeteer.launch({ executablePath: stats.executablePath, args: ["--no-sandbox"] });
+				puppeteer.launch({ executablePath: chromium.path, args: ["--no-sandbox"] }).then(async (browser) => {
 					const page = await browser.newPage();
 					await page.goto("https://fast.com");
 					await page.waitForSelector("#speed-value.succeeded", { timeout: this.options.timeout });
