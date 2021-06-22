@@ -1,6 +1,6 @@
 import { convertUnits } from "./Utils";
 import puppeteer = require("puppeteer");
-import chromium = require('chromium');
+import chromium = require("chromium");
 
 const AVAILABLE_UNITS = ["Bps", "KBps", "MBps", "GBps", "bps", "Kbps", "Mbps", "Gbps"];
 
