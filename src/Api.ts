@@ -1,5 +1,5 @@
-import puppeteer = require('puppeteer');
-import os = require('os');
+import puppeteer = require("puppeteer");
+import os = require("os");
 import { convertUnits } from "./Utils";
 
 const AVAILABLE_UNITS = ["Bps", "KBps", "MBps", "GBps", "bps", "Kbps", "Mbps", "Gbps"];
@@ -13,7 +13,7 @@ function check(options: FastAPIOptions) {
 		typeof options.measureUpload !== "undefined" &&
 		typeof options.measureUpload !== "boolean"
 	)
-		throw new TypeError('Option "measureUpload" must be a boolean.');
+		throw new TypeError("Option \"measureUpload\" must be a boolean.");
 
 	if (
 		typeof options.uploadUnit !== "undefined" &&
@@ -21,7 +21,7 @@ function check(options: FastAPIOptions) {
 			!/.+/.test(options.uploadUnit) ||
 			!AVAILABLE_UNITS.includes(options.uploadUnit))
 	)
-		throw new TypeError('Option "uploadUnit" must be one of the values of "FastAPI.UNITS".');
+		throw new TypeError("Option \"uploadUnit\" must be one of the values of \"FastAPI.UNITS\".");
 
 	if (
 		typeof options.downloadUnit !== "undefined" &&
@@ -29,13 +29,13 @@ function check(options: FastAPIOptions) {
 			!/.+/.test(options.downloadUnit) ||
 			!AVAILABLE_UNITS.includes(options.downloadUnit))
 	)
-		throw new TypeError('Option "downloadUnit" must be one of the values of "FastAPI.UNITS".');
+		throw new TypeError("Option \"downloadUnit\" must be one of the values of \"FastAPI.UNITS\".");
 
 	if (
 		typeof options.timeout !== "undefined" &&
 		typeof options.timeout !== "number"
 	)
-		throw new TypeError('Option "timeout" must be a number.');
+		throw new TypeError("Option \"timeout\" must be a number.");
 }
 
 export class FastAPI {
@@ -67,30 +67,30 @@ export class FastAPI {
 			try {
 				const browser = await this.launchBrowser();
 				const page = await browser.newPage();
-				await page.goto('https://fast.com');
-				await page.waitForSelector('#speed-value.succeeded', { timeout: this.options.timeout });
-				if (this.options.measureUpload) await page.waitForSelector('#upload-value.succeeded', { timeout: this.options.timeout });
+				await page.goto("https://fast.com");
+				await page.waitForSelector("#speed-value.succeeded", { timeout: this.options.timeout });
+				if (this.options.measureUpload) await page.waitForSelector("#upload-value.succeeded", { timeout: this.options.timeout });
 
 				const result = await page.evaluate(() => {
 					const $ = document.querySelector.bind(document);
 
 					return {
-						ping: Number($('#latency-value').textContent),
-						downloadSpeed: Number($('#speed-value').textContent),
-						uploadSpeed: Number($('#upload-value').textContent),
-						pingUnit: $('#latency-units').textContent.trim(),
-						downloadUnit: $('#speed-units').textContent.trim(),
-						uploadUnit: $('#upload-units').textContent.trim(),
+						ping: Number($("#latency-value").textContent),
+						downloadSpeed: Number($("#speed-value").textContent),
+						uploadSpeed: Number($("#upload-value").textContent),
+						pingUnit: $("#latency-units").textContent.trim(),
+						downloadUnit: $("#speed-units").textContent.trim(),
+						uploadUnit: $("#upload-units").textContent.trim(),
 					};
 				});
 
 				if (result.downloadUnit !== this.options.downloadUnit) {
-					const newData = await convertUnits(result.downloadUnit, this.options.downloadUnit, result.downloadSpeed);
+					const newData = convertUnits(result.downloadUnit, this.options.downloadUnit, result.downloadSpeed);
 					result.downloadSpeed = Number(newData[0]);
 					result.downloadUnit = newData[1];
 				}
 				if (result.uploadUnit !== this.options.uploadUnit) {
-					const newData = await convertUnits(result.uploadUnit, this.options.uploadUnit, result.uploadSpeed);
+					const newData = convertUnits(result.uploadUnit, this.options.uploadUnit, result.uploadSpeed);
 					result.uploadSpeed = Number(newData[0]);
 					result.uploadUnit = newData[1];
 				}
@@ -112,11 +112,11 @@ export class FastAPI {
 
 		let executablePath: string;
 		if (/^win/i.test(osPlatform))
-			executablePath = '';
+			executablePath = "";
 		else if (/^linux/i.test(osPlatform))
-			executablePath = '/usr/bin/google-chrome';
+			executablePath = "/usr/bin/google-chrome";
 
-		return await puppeteer.launch({ executablePath, args: ['--no-sandbox'] });
+		return await puppeteer.launch({ executablePath, args: ["--no-sandbox"] });
 	}
 }
 
@@ -133,11 +133,11 @@ export type UNITS =
 
 export interface SpeedTestResult {
 	/** Network ping. */
-	ping: Number,
+	ping: number,
 	/** Network download speed. */
-	downloadSpeed: Number,
+	downloadSpeed: number,
 	/** Network upload speed. */
-	uploadSpeed: Number,
+	uploadSpeed: number,
 	/** Network ping unit. */
 	pingUnit: string,
 	/** Network download speed unit. */

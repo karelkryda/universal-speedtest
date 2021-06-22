@@ -1,4 +1,4 @@
-const convert = require('@samuelpoulin/convert-units')
+const convert = require("@samuelpoulin/convert-units")
 
 /**
  * Function to convert a unit to another unit.
@@ -7,7 +7,7 @@ const convert = require('@samuelpoulin/convert-units')
  * @param speed Current network speed
  * @returns ```Array[newSpeed, newUnit]```
  */
-export async function convertUnits(actualUnit: string, newUnit: string, speed: Number) {
+export function convertUnits(actualUnit: string, newUnit: string, speed: number): Array<number> {
     const newSpeed = convert(speed).from(actualUnit.slice(0, -2)).to(newUnit.slice(0, -2));
     return [newSpeed, newUnit];
 }
