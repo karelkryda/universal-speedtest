@@ -24,5 +24,5 @@ describe("Puppeteer tests", () => {
 
         expect(result.pingUnit).to.equal("ms");
         expect(result.downloadSpeed).to.be.above(20);
-    }).timeout(60000);
+    }).timeout(90000);
 });
