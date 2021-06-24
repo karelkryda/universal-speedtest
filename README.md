@@ -65,6 +65,7 @@ SpeedTest.runTestByFast().then(result => {
 |servers <sup>**F**</sup>          | String[] | Location(s) of test server(s) |
 
 \* only available when the "measureUpload" property is set to true
+
 **F** only available for Fast.com speed test
 
 ## TODO
