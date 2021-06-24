@@ -1,2 +1,2 @@
-export * from "./Api";
-export * from "./Utils"
+export * from "./SpeedTest";
+export { convertUnits } from "./Utils"
