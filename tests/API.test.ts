@@ -17,7 +17,7 @@ describe("Puppeteer tests", () => {
     it("Run speed test with measureUpload", async () => {
         const FastTest = new FastAPI({
             measureUpload: true,
-            timeout: 60000
+            timeout: 90000
         });
 
         const result = await FastTest.runTest();
