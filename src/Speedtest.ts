@@ -1,3 +1,4 @@
+import {performance} from "perf_hooks";
 import * as path from "path";
 import {Worker} from "worker_threads";
 import {IncomingHttpHeaders} from "urllib";

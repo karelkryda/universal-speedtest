@@ -1,3 +1,4 @@
+import {performance} from "perf_hooks";
 import {parentPort, workerData} from "worker_threads";
 import {createRequest} from "../helpers/UrllibHelper";
 import {HTTPUploader} from "../helpers/HTTPUploader";

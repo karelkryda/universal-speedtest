@@ -1,3 +1,4 @@
+import {performance} from "perf_hooks";
 import {HttpClientResponse, IncomingHttpHeaders} from "urllib";
 import {createRequest} from "./helpers/UrllibHelper";
 import {avg, convertUnits, getDistance, getQuartile, jitter, sortObject} from "./Utils";
