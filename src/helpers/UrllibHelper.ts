@@ -1,4 +1,3 @@
-import {version} from "../../package.json";
 import {HttpClientResponse, IncomingHttpHeaders, request} from "urllib";
 import {parseString} from "xml2js";
 import {validate} from "fast-xml-parser";
@@ -15,7 +14,7 @@ import {validate} from "fast-xml-parser";
  * @returns Promise
  */
 export function createRequest(url: string, headers: IncomingHttpHeaders, secure = true, data = {}, bump = "0", timeout = 10, withBump = false): Promise<HttpClientResponse<unknown>> {
-    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/" + version;
+    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.1";
     headers["cache-control"] = "no-cache";
 
     return request(((url[0] == ":") ? (secure) ? "https" : "http" : "") + url + ((withBump) ? (((url.includes("?")) ? "&" : "?") + "x=" + performance.now() + bump) : ""), {
