@@ -12,8 +12,8 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "coverage": "nyc npm test",
-    "lint": "eslint \"**\\*.ts\"",
-    "lintFix": "eslint \"**\\*.ts\" --fix"
+    "lint": "eslint . --ext .ts",
+    "lintFix": "eslint . --ext .ts --fix"
   },
   "author": "Karel Krýda (https://github.com/karelkryda)",
   "license": "GPL-3.0",
