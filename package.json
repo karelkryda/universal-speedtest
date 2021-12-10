@@ -15,7 +15,7 @@
     "lint": "eslint \"**\\*.ts\"",
     "lintFix": "eslint \"**\\*.ts\" --fix"
   },
-  "author": "Karel Krýda",
+  "author": "Karel Krýda (https://github.com/karelkryda)",
   "license": "GPL-3.0",
   "types": "dist/index.d.ts",
   "files": [
@@ -63,5 +63,8 @@
     "nyc": "^15.1.0",
     "ts-mocha": "^8.0.0",
     "typescript": "^4.5.3"
+  },
+  "engines": {
+    "node": ">=12.0.0"
   }
 }
