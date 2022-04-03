@@ -1,6 +1,6 @@
 {
   "name": "universal-speedtest",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "This library allows you to test speed with various speed testing sites.",
   "main": "dist/index.js",
   "scripts": {
@@ -46,23 +46,23 @@
   },
   "homepage": "https://github.com/karelkryda/universal-speedtest#readme",
   "dependencies": {
-    "@types/node": "^16.11.12",
+    "@types/node": "^17.0.23",
     "convert-units": "^3.0.0-beta.0",
-    "fast-xml-parser": "^3.21.1",
+    "fast-xml-parser": "^4.0.7",
     "urllib": "^2.38.0",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
-    "@types/mocha": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.6.0",
-    "@typescript-eslint/parser": "^5.6.0",
-    "chai": "^4.3.4",
-    "eslint": "^8.4.1",
-    "mocha": "^9.1.3",
+    "@types/mocha": "^9.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.12.0",
+    "mocha": "^9.2.2",
     "nyc": "^15.1.0",
-    "ts-mocha": "^8.0.0",
-    "typescript": "^4.5.3"
+    "ts-mocha": "^9.0.2",
+    "typescript": "^4.6.3"
   },
   "engines": {
     "node": ">=12.0.0"

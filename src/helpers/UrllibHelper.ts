@@ -1,7 +1,7 @@
 import {performance} from "perf_hooks";
 import {HttpClientResponse, IncomingHttpHeaders, request} from "urllib";
 import {parseString} from "xml2js";
-import {validate} from "fast-xml-parser";
+import {XMLValidator} from "fast-xml-parser";
 
 /**
  * Function to create a urllib request for speedtest.net
@@ -15,7 +15,7 @@ import {validate} from "fast-xml-parser";
  * @returns Promise
  */
 export function createRequest(url: string, headers: IncomingHttpHeaders, secure = true, data = {}, bump = "0", timeout = 10, withBump = false): Promise<HttpClientResponse<unknown>> {
-    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.2";
+    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.3";
     headers["cache-control"] = "no-cache";
 
     return request(((url[0] == ":") ? (secure) ? "https" : "http" : "") + url + ((withBump) ? (((url.includes("?")) ? "&" : "?") + "x=" + performance.now() + bump) : ""), {
@@ -34,7 +34,7 @@ export function createRequest(url: string, headers: IncomingHttpHeaders, secure 
  * @param callback - callback to which the JSON object will be returned
  */
 export function parseXML(xml: string, callback): void {
-    if (validate(xml) === true)
+    if (XMLValidator.validate(xml) === true)
         parseString(xml, (error, result) => {
             return callback(result);
         });

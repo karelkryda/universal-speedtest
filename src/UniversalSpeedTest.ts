@@ -68,6 +68,23 @@ function check(options: UniversalSpeedTestOptions) {
             !Object.values(SpeedUnits).includes(options.uploadUnit))
     )
         throw new TypeError("Option \"uploadUnit\" must be one of the values of \"SpeedUnits\".");
+
+    const isEmpty = a => a.toString().replace(/,/g, "") === "";
+    /** Check downloadPayload option. */
+    if (
+        typeof options.downloadPayload !== "undefined" &&
+        (typeof options.downloadPayload !== "object" ||
+            isEmpty(options.downloadPayload))
+    )
+        throw new TypeError("Option \"downloadPayload\" must be a non-empty array.");
+
+    /** Check uploadPayload option. */
+    if (
+        typeof options.uploadPayload !== "undefined" &&
+        (typeof options.uploadPayload !== "object" ||
+            isEmpty(options.uploadPayload))
+    )
+        throw new TypeError("Option \"uploadPayload\" must be a non-empty array.");
 }
 
 export class UniversalSpeedtest {
@@ -150,4 +167,8 @@ interface UniversalSpeedTestOptions {
     downloadUnit?: SpeedUnits,
     /** The resulting unit of upload speed. */
     uploadUnit?: SpeedUnits
+    /** Payload used by Cloudflare test (download). */
+    downloadPayload?: number[][]
+    /** Payload used by Cloudflare test (upload). */
+    uploadPayload?: number[][]
 }
