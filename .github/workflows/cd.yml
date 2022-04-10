@@ -1,8 +1,8 @@
 name: CD - Publish to npm
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [ created ]
 
 jobs:
   build:
@@ -33,12 +33,6 @@ jobs:
         run: npm run build
 
       - name: Publish 📡
-        id: publish
-        if: github.event_name == 'pull_request' && github.ref == 'refs/heads/master'
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-
-      - if: steps.publish.outputs.type != 'none'
-        run: |
-          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

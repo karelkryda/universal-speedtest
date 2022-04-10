@@ -1,6 +1,7 @@
 import {SpeedUnits} from "./index";
 import {Speedtest, SpeedtestResult} from "./Speedtest";
 import {Cloudflare, CloudflareResult} from "./Cloudflare";
+import {RequestOptions} from "urllib";
 
 /**
  * Check if parameters are valid
@@ -85,6 +86,13 @@ function check(options: UniversalSpeedTestOptions) {
             isEmpty(options.uploadPayload))
     )
         throw new TypeError("Option \"uploadPayload\" must be a non-empty array.");
+
+    /** Check urllibOptions option. */
+    if (
+        typeof options.urllibOptions !== "undefined" &&
+        typeof options.urllibOptions !== "object"
+    )
+        throw new TypeError("Option \"urllibOptions\" must be a type of urllib's RequestOptions.");
 }
 
 export class UniversalSpeedtest {
@@ -170,5 +178,7 @@ interface UniversalSpeedTestOptions {
     /** Payload used by Cloudflare test (download). */
     downloadPayload?: number[][]
     /** Payload used by Cloudflare test (upload). */
-    uploadPayload?: number[][]
+    uploadPayload?: number[][],
+    /** Custom request options to urllib. */
+    urllibOptions?: RequestOptions
 }

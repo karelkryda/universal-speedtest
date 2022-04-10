@@ -1,5 +1,5 @@
 import {performance} from "perf_hooks";
-import {HttpClientResponse, IncomingHttpHeaders} from "urllib";
+import {HttpClientResponse, IncomingHttpHeaders, RequestOptions} from "urllib";
 import {createRequest} from "./helpers/UrllibHelper";
 import {avg, convertUnits, getDistance, getQuartile, jitter, sortObject} from "./Utils";
 import {SpeedUnits} from "./index";
@@ -103,7 +103,7 @@ export class Cloudflare {
      */
     private async getMetaData(): Promise<void> {
         try {
-            const request = createRequest("://speed.cloudflare.com/meta", {}, this.options.secure, {}, "", this.options.timeout);
+            const request = createRequest("://speed.cloudflare.com/meta", {}, this.options.secure, {}, "", this.options.timeout, false, this.options.urllibOptions);
             await request.then((result) => {
                 const response = JSON.parse(result.data.toString());
                 this.testConfig = response;
@@ -126,7 +126,7 @@ export class Cloudflare {
         headers["Accept-Encoding"] = "gzip";
 
         try {
-            const request = createRequest("://speed.cloudflare.com/locations", headers, this.options.secure, {}, "", this.options.timeout);
+            const request = createRequest("://speed.cloudflare.com/locations", headers, this.options.secure, {}, "", this.options.timeout, false, this.options.urllibOptions);
             await request.then((result) => {
                 try {
                     const response = JSON.parse(result.data.toString());
@@ -184,7 +184,7 @@ export class Cloudflare {
      * @private
      */
     private doDownload(bytes: number): Promise<HttpClientResponse<unknown>> {
-        return createRequest(`://speed.cloudflare.com/__down?bytes=${bytes}`, {}, this.options.secure, {}, "", this.options.timeout);
+        return createRequest(`://speed.cloudflare.com/__down?bytes=${bytes}`, {}, this.options.secure, {}, "", this.options.timeout, false, this.options.urllibOptions);
     }
 
     /**
@@ -229,7 +229,7 @@ export class Cloudflare {
         const headers: IncomingHttpHeaders = {};
         headers["content-length"] = `${Buffer.byteLength(bytesData)}`;
 
-        return createRequest(`://speed.cloudflare.com/__up`, headers, this.options.secure, bytesData, "", this.options.timeout);
+        return createRequest(`://speed.cloudflare.com/__up`, headers, this.options.secure, bytesData, "", this.options.timeout, false, this.options.urllibOptions);
     }
 
     /**
@@ -272,17 +272,19 @@ export interface CloudflareOptions {
     /** Single request timeout (in seconds). */
     timeout?: number,
     /** Measure the download speed. */
-    measureDownload?: boolean;
+    measureDownload?: boolean,
     /** Measure the upload speed. */
-    measureUpload?: boolean;
+    measureUpload?: boolean,
     /** The resulting unit of download speed. */
-    downloadUnit?: SpeedUnits;
+    downloadUnit?: SpeedUnits,
     /** The resulting unit of upload speed. */
-    uploadUnit?: SpeedUnits;
+    uploadUnit?: SpeedUnits,
     /** Payload used by Cloudflare test (download). */
-    downloadPayload?: number[][]
+    downloadPayload?: number[][],
     /** Payload used by Cloudflare test (upload). */
-    uploadPayload?: number[][]
+    uploadPayload?: number[][],
+    /** Custom request options to urllib. */
+    urllibOptions?: RequestOptions
 }
 
 export interface CloudflareResult {

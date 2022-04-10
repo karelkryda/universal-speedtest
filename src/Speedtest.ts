@@ -1,7 +1,7 @@
 import {performance} from "perf_hooks";
 import * as path from "path";
 import {Worker} from "worker_threads";
-import {IncomingHttpHeaders} from "urllib";
+import {IncomingHttpHeaders, RequestOptions} from "urllib";
 import {createRequest, parseXML} from "./helpers/UrllibHelper";
 import {convertUnits, getDistance, jitter, sortObject, sum} from "./Utils";
 import {HTTPUploaderData} from "./helpers/HTTPUploaderData";
@@ -92,7 +92,7 @@ export class Speedtest {
      */
     private async getConfig(): Promise<void> {
         try {
-            const request = createRequest("://www.speedtest.net/speedtest-config.php", {}, this.options.secure, {}, "0", this.options.timeout, true);
+            const request = createRequest("://www.speedtest.net/speedtest-config.php", {}, this.options.secure, {}, "0", this.options.timeout, true, this.options.urllibOptions);
             await request.then((result) => {
                 parseXML(result.data.toString(), (response) => {
                     const client = response.settings.client[0].$;
@@ -168,7 +168,7 @@ export class Speedtest {
 
         try {
             for (const url of urls) {
-                const request = createRequest(url + "?threads=" + this.testConfig.threads.download, {}, this.options.secure, {}, "0", this.options.timeout, true);
+                const request = createRequest(url + "?threads=" + this.testConfig.threads.download, {}, this.options.secure, {}, "0", this.options.timeout, true, this.options.urllibOptions);
                 await request.then((result) => {
                     parseXML(result.data.toString(), (response) => {
                         try {
@@ -216,7 +216,7 @@ export class Speedtest {
                 for (let i = 0; i < 3; i++) {
                     const start = performance.now();
 
-                    const request = createRequest(url, {}, this.options.secure, {}, "0", this.options.timeout, true);
+                    const request = createRequest(url, {}, this.options.secure, {}, "0", this.options.timeout, true, this.options.urllibOptions);
                     await request.then((result) => {
                         const total = (performance.now() - start)
 
@@ -282,7 +282,8 @@ export class Speedtest {
                         request,
                         wait: this.options.wait,
                         startTime: start,
-                        timeout: this.testConfig.length.download
+                        timeout: this.testConfig.length.download,
+                        urllibOptions: this.options.urllibOptions
                     }
                 });
 
@@ -357,7 +358,8 @@ export class Speedtest {
                         request,
                         wait: this.options.wait,
                         startTime: start,
-                        timeout: this.testConfig.length.upload
+                        timeout: this.testConfig.length.upload,
+                        urllibOptions: this.options.urllibOptions
                     }
                 });
 
@@ -402,7 +404,9 @@ export interface SpeedtestOptions {
     /** The resulting unit of download speed. */
     downloadUnit?: SpeedUnits,
     /** The resulting unit of upload speed. */
-    uploadUnit?: SpeedUnits
+    uploadUnit?: SpeedUnits,
+    /** Custom request options to urllib. */
+    urllibOptions?: RequestOptions
 }
 
 export interface SpeedtestResult {
