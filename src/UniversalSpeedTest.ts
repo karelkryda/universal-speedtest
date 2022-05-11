@@ -153,7 +153,6 @@ export class UniversalSpeedtest {
     }
 }
 
-
 interface UniversalSpeedTestOptions {
     /** Display debug messages. */
     debug?: boolean,

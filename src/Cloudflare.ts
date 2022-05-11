@@ -4,7 +4,6 @@ import { createRequest } from "./helpers/UrllibHelper";
 import { avg, convertUnits, getDistance, getQuartile, jitter, sortObject } from "./Utils";
 import { SpeedUnits } from "./index";
 
-
 export class Cloudflare {
     private readonly options: CloudflareOptions;
     private readonly result: CloudflareResult = {} as CloudflareResult;
@@ -14,18 +13,19 @@ export class Cloudflare {
     private clientLon: number;
     private readonly tests = {
         download: [
-            [101000, 10],
-            [1001000, 8],
-            [10001000, 6],
-            [25001000, 4],
-            [100001000, 1]
+            [ 101000, 10 ],
+            [ 1001000, 8 ],
+            [ 10001000, 6 ],
+            [ 25001000, 4 ],
+            [ 100001000, 1 ]
         ],
         upload: [
-            [11000, 10],
-            [101000, 10],
-            [1001000, 8]
+            [ 11000, 10 ],
+            [ 101000, 10 ],
+            [ 1001000, 8 ]
         ]
     }
+
     private servers = {};
     private bestServer;
 
@@ -172,7 +172,7 @@ export class Cloudflare {
                         times.push(total);
                 });
             }
-            return [Number(avg(times).toFixed(3)), Number(jitter(times).toFixed(3))];
+            return [ Number(avg(times).toFixed(3)), Number(jitter(times).toFixed(3)) ];
         } catch {
             throw new Error("An error occurred while measuring latency.");
         }

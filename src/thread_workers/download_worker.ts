@@ -10,4 +10,4 @@ if (wait || (((performance.now() - startTime) / 1000) <= timeout)) {
     thread.run().then(result => {
         parentPort.postMessage(result);
     });
-} else parentPort.postMessage([0]);
+} else parentPort.postMessage([ 0 ]);

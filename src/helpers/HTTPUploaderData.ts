@@ -10,7 +10,7 @@ export class HTTPUploaderData {
     constructor(length) {
         this.length = length;
         this._data = null;
-        this._total = [0];
+        this._total = [ 0 ];
     }
 
     /**
