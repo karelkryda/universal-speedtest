@@ -1,7 +1,7 @@
-import {SpeedUnits} from "./index";
-import {Speedtest, SpeedtestResult} from "./Speedtest";
-import {Cloudflare, CloudflareResult} from "./Cloudflare";
-import {RequestOptions} from "urllib";
+import { SpeedUnits } from "./index";
+import { Speedtest, SpeedtestResult } from "./Speedtest";
+import { Cloudflare, CloudflareResult } from "./Cloudflare";
+import { RequestOptions } from "urllib";
 
 /**
  * Check if parameters are valid
@@ -129,7 +129,7 @@ export class UniversalSpeedtest {
      * @returns Promise
      */
     public runSpeedtestNet(): Promise<SpeedtestResult> {
-        const speedTest = new Speedtest({...this.options});
+        const speedTest = new Speedtest({ ...this.options });
         return speedTest.run();
     }
 
@@ -148,7 +148,7 @@ export class UniversalSpeedtest {
      * @returns Promise
      */
     public runCloudflareCom(): Promise<CloudflareResult> {
-        const speedTest = new Cloudflare({...this.options});
+        const speedTest = new Cloudflare({ ...this.options });
         return speedTest.run();
     }
 }

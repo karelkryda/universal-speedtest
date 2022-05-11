@@ -21,12 +21,29 @@
   "rules": {
     "no-console": "off",
     "linebreak-style": "off",
+    "camelcase": [
+      "warn",
+      {
+        "properties": "never",
+        "ignoreImports": true
+      }
+    ],
+    "no-unused-vars": [
+      "warn",
+      {
+        "args": "none"
+      }
+    ],
     "quotes": [
       "error",
       "double",
       {
         "allowTemplateLiterals": true
       }
+    ],
+    "object-curly-spacing": [
+      "error",
+      "always"
     ],
     "keyword-spacing": [
       "error",

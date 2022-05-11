@@ -1,6 +1,7 @@
 export * from "./UniversalSpeedTest";
-export {convertUnits} from "./Utils"
+export { convertUnits } from "./Utils"
 
+/* eslint-disable no-unused-vars*/
 export enum SpeedUnits {
     Bps = "Bps",
     KBps = "KBps",

@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {UniversalSpeedtest} from "../src";
+import { expect } from "chai";
+import { UniversalSpeedtest } from "../src";
 
 describe("Cloudflare test", () => {
     it("Run speed.cloudflare.com speed test", async () => {

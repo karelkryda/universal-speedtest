@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {UniversalSpeedtest} from "../src";
+import { expect } from "chai";
+import { UniversalSpeedtest } from "../src";
 
 describe("Speedtest test", () => {
     it("Run Speedtest.com speed test", async () => {

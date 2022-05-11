@@ -1,11 +1,11 @@
-import {performance} from "perf_hooks";
+import { performance } from "perf_hooks";
 import * as path from "path";
-import {Worker} from "worker_threads";
-import {IncomingHttpHeaders, RequestOptions} from "urllib";
-import {createRequest, parseXML} from "./helpers/UrllibHelper";
-import {convertUnits, getDistance, jitter, sortObject, sum} from "./Utils";
-import {HTTPUploaderData} from "./helpers/HTTPUploaderData";
-import {SpeedUnits} from "./index";
+import { Worker } from "worker_threads";
+import { IncomingHttpHeaders, RequestOptions } from "urllib";
+import { createRequest, parseXML } from "./helpers/UrllibHelper";
+import { convertUnits, getDistance, jitter, sortObject, sum } from "./Utils";
+import { HTTPUploaderData } from "./helpers/HTTPUploaderData";
+import { SpeedUnits } from "./index";
 
 
 export class Speedtest {
@@ -268,7 +268,7 @@ export class Speedtest {
             });
 
             const maxThreads = this.testConfig.threads.download;
-            const inFlight = {"threads": 0};
+            const inFlight = { "threads": 0 };
             const finished = [];
             const start = performance.now();
 
@@ -344,7 +344,7 @@ export class Speedtest {
             });
 
             const maxThreads = this.testConfig.threads.upload;
-            const inFlight = {"threads": 0};
+            const inFlight = { "threads": 0 };
             const finished = [];
             const start = performance.now();
 

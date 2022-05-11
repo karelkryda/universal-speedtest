@@ -1,8 +1,8 @@
-import {performance} from "perf_hooks";
-import {HttpClientResponse, IncomingHttpHeaders, RequestOptions} from "urllib";
-import {createRequest} from "./helpers/UrllibHelper";
-import {avg, convertUnits, getDistance, getQuartile, jitter, sortObject} from "./Utils";
-import {SpeedUnits} from "./index";
+import { performance } from "perf_hooks";
+import { HttpClientResponse, IncomingHttpHeaders, RequestOptions } from "urllib";
+import { createRequest } from "./helpers/UrllibHelper";
+import { avg, convertUnits, getDistance, getQuartile, jitter, sortObject } from "./Utils";
+import { SpeedUnits } from "./index";
 
 
 export class Cloudflare {

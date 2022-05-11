@@ -1,4 +1,4 @@
-import {sum} from "../Utils";
+import { sum } from "../Utils";
 
 export class HTTPUploader {
     private readonly request;

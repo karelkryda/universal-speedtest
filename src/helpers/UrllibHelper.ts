@@ -1,7 +1,7 @@
-import {performance} from "perf_hooks";
-import {HttpClientResponse, IncomingHttpHeaders, request, RequestOptions} from "urllib";
-import {parseString} from "xml2js";
-import {XMLValidator} from "fast-xml-parser";
+import { performance } from "perf_hooks";
+import { HttpClientResponse, IncomingHttpHeaders, request, RequestOptions } from "urllib";
+import { parseString } from "xml2js";
+import { XMLValidator } from "fast-xml-parser";
 
 /**
  * Function to create an urllib request for speedtest.net
@@ -16,11 +16,11 @@ import {XMLValidator} from "fast-xml-parser";
  * @returns Promise
  */
 export function createRequest(url: string, headers: IncomingHttpHeaders, secure = true, data = {}, bump = "0", timeout = 10, withBump = false, urllibOptions: RequestOptions = {}): Promise<HttpClientResponse<unknown>> {
-    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.4";
+    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.5";
     headers["cache-control"] = "no-cache";
 
     return request(((url[0] == ":") ? (secure) ? "https" : "http" : "") + url + ((withBump) ? (((url.includes("?")) ? "&" : "?") + "x=" + performance.now() + bump) : ""), {
-        method: (Object.keys(data).length) ? "POST" : "GET",
+        method: (typeof data !== "object") ? "POST" : "GET",
         timeout: timeout * 1000,
         ...urllibOptions,
         headers: {
