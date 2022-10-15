@@ -1,7 +1,7 @@
 import { SpeedUnits } from "./index";
 import { Speedtest, SpeedtestResult } from "./Speedtest";
 import { Cloudflare, CloudflareResult } from "./Cloudflare";
-import { RequestOptions } from "urllib";
+import { RequestOptions } from "urllib/src/Request";
 
 /**
  * Check if parameters are valid

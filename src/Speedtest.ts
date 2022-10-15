@@ -1,7 +1,8 @@
 import { performance } from "perf_hooks";
 import * as path from "path";
 import { Worker } from "worker_threads";
-import { IncomingHttpHeaders, RequestOptions } from "urllib";
+import { IncomingHttpHeaders } from "http";
+import { RequestOptions } from "urllib/src/Request";
 import { createRequest, parseXML } from "./helpers/UrllibHelper";
 import { convertUnits, getDistance, jitter, sortObject, sum } from "./Utils";
 import { HTTPUploaderData } from "./helpers/HTTPUploaderData";
@@ -36,7 +37,7 @@ export class Speedtest {
 
         this.result.client = {
             ip: this.testConfig.client.ip,
-            isp: this.testConfig.client.isp
+            isp: this.testConfig.client.isp,
         };
 
         if (this.options.debug) {
@@ -57,7 +58,7 @@ export class Speedtest {
             city: this.fastestServer.name,
             country: this.fastestServer.country,
             countryCode: this.fastestServer.cc,
-            distance: Number(Number(this.fastestServer.distance).toFixed(2))
+            distance: Number(Number(this.fastestServer.distance).toFixed(2)),
         };
 
         if (this.options.measureDownload) {
@@ -108,7 +109,7 @@ export class Speedtest {
                     const sizes = {
                         "upload": this.uploadSizes.slice(uploadRatio - 1, this.uploadSizes.length),
                         "download": [ 350, 500, 750, 1000, 1500, 2000, 2500,
-                            3000, 3500, 4000 ]
+                            3000, 3500, 4000 ],
                     };
 
                     const uploadSizeCount = sizes["upload"].length;
@@ -117,17 +118,17 @@ export class Speedtest {
 
                     const counts = {
                         "upload": uploadCount,
-                        "download": Number(download.threadsperurl)
+                        "download": Number(download.threadsperurl),
                     };
 
                     const threads = {
                         "upload": Number(upload.threads),
-                        "download": Number(serverConfig.threadcount) * 2
+                        "download": Number(serverConfig.threadcount) * 2,
                     };
 
                     const length = {
                         "upload": Number(upload.testlength),
-                        "download": Number(download.testlength)
+                        "download": Number(download.testlength),
                     };
 
                     this.testConfig = {
@@ -137,7 +138,7 @@ export class Speedtest {
                         "counts": counts,
                         "threads": threads,
                         "length": length,
-                        "uploadMax": uploadCount * uploadSizeCount
+                        "uploadMax": uploadCount * uploadSizeCount,
                     };
 
                     this.clientLat = parseFloat(client.lat);
@@ -194,7 +195,7 @@ export class Speedtest {
      * @private
      * @returns [string, unknown]
      */
-    private getClosestServer(limit = 5): [string, unknown][] {
+    private getClosestServer(limit = 5): [ string, unknown ][] {
         return Object.entries(sortObject(this.servers)).slice(0, limit);
     }
 
@@ -282,8 +283,8 @@ export class Speedtest {
                         wait: this.options.wait,
                         startTime: start,
                         timeout: this.testConfig.length.download,
-                        urllibOptions: this.options.urllibOptions
-                    }
+                        urllibOptions: this.options.urllibOptions,
+                    },
                 });
 
                 worker.on("message", (result) => {
@@ -358,8 +359,8 @@ export class Speedtest {
                         wait: this.options.wait,
                         startTime: start,
                         timeout: this.testConfig.length.upload,
-                        urllibOptions: this.options.urllibOptions
-                    }
+                        urllibOptions: this.options.urllibOptions,
+                    },
                 });
 
                 worker.on("message", (result) => {

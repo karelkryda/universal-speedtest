@@ -4,7 +4,7 @@ import { UniversalSpeedtest } from "../src";
 describe("Speedtest test", () => {
     it("Run Speedtest.com speed test", async () => {
         const test = new UniversalSpeedtest({
-            wait: true
+            wait: true,
         });
         const result = await test.runSpeedtestNet();
 

@@ -1,5 +1,7 @@
 import { performance } from "perf_hooks";
-import { HttpClientResponse, IncomingHttpHeaders, RequestOptions } from "urllib";
+import { IncomingHttpHeaders } from "http";
+import { HttpClientResponse } from "urllib/src/Response";
+import { RequestOptions } from "urllib/src/Request";
 import { createRequest } from "./helpers/UrllibHelper";
 import { avg, convertUnits, getDistance, getQuartile, jitter, sortObject } from "./Utils";
 import { SpeedUnits } from "./index";
@@ -17,13 +19,13 @@ export class Cloudflare {
             [ 1001000, 8 ],
             [ 10001000, 6 ],
             [ 25001000, 4 ],
-            [ 100001000, 1 ]
+            [ 100001000, 1 ],
         ],
         upload: [
             [ 11000, 10 ],
             [ 101000, 10 ],
-            [ 1001000, 8 ]
-        ]
+            [ 1001000, 8 ],
+        ],
     }
 
     private servers = {};
@@ -48,7 +50,7 @@ export class Cloudflare {
         this.result.client = {
             ip: this.testConfig.clientIp,
             city: this.testConfig.city,
-            countryCode: this.testConfig.country
+            countryCode: this.testConfig.country,
         };
 
         if (this.options.debug) {
@@ -146,7 +148,7 @@ export class Cloudflare {
     }
 
     /**
-     * Function to get closest server by client and server distance
+     * Function to get the closest server by client and server distance
      * @private
      * @returns [string, unknown]
      */
@@ -158,7 +160,7 @@ export class Cloudflare {
      * Function to get client latency
      * @private
      */
-    private async getLatency(): Promise<[number, number]> {
+    private async getLatency(): Promise<[ number, number ]> {
         try {
             const times = [];
 
@@ -183,7 +185,7 @@ export class Cloudflare {
      * @param bytes - How many bytes to download
      * @private
      */
-    private doDownload(bytes: number): Promise<HttpClientResponse<unknown>> {
+    private doDownload(bytes: number): Promise<HttpClientResponse> {
         return createRequest(`://speed.cloudflare.com/__down?bytes=${bytes}`, {}, this.options.secure, {}, "", this.options.timeout, false, this.options.urllibOptions);
     }
 
@@ -223,7 +225,7 @@ export class Cloudflare {
      * @param bytes - How many bytes to download
      * @private
      */
-    private doUpload(bytes: number): Promise<HttpClientResponse<unknown>> {
+    private doUpload(bytes: number): Promise<HttpClientResponse> {
         const bytesData = "0".repeat(bytes);
 
         const headers: IncomingHttpHeaders = {};

@@ -4,7 +4,7 @@ import { UniversalSpeedtest } from "../src";
 describe("Cloudflare test", () => {
     it("Run speed.cloudflare.com speed test", async () => {
         const test = new UniversalSpeedtest({
-            measureUpload: true
+            measureUpload: true,
         });
         const result = await test.runCloudflareCom();
 

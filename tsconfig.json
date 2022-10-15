@@ -2,7 +2,8 @@
   "compileOnSave": true,
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2021",
+    "target": "es2022",
+    "esModuleInterop": true,
     "declaration": true,
     "outDir": "./dist"
   },

@@ -1,5 +1,8 @@
 import { performance } from "perf_hooks";
-import { HttpClientResponse, IncomingHttpHeaders, request, RequestOptions } from "urllib";
+import { IncomingHttpHeaders } from "http";
+import { request } from "urllib";
+import { RequestOptions } from "urllib/src/Request";
+import { HttpClientResponse } from "urllib/src/Response";
 import { parseString } from "xml2js";
 import { XMLValidator } from "fast-xml-parser";
 
@@ -15,7 +18,7 @@ import { XMLValidator } from "fast-xml-parser";
  * @param urllibOptions - custom request options
  * @returns Promise
  */
-export function createRequest(url: string, headers: IncomingHttpHeaders, secure = true, data = {}, bump = "0", timeout = 10, withBump = false, urllibOptions: RequestOptions = {}): Promise<HttpClientResponse<unknown>> {
+export function createRequest(url: string, headers: IncomingHttpHeaders, secure = true, data = {}, bump = "0", timeout = 10, withBump = false, urllibOptions: RequestOptions = {}): Promise<HttpClientResponse> {
     headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/2.0.5";
     headers["cache-control"] = "no-cache";
 
@@ -25,9 +28,9 @@ export function createRequest(url: string, headers: IncomingHttpHeaders, secure 
         ...urllibOptions,
         headers: {
             ...headers,
-            ...urllibOptions.headers
+            ...urllibOptions.headers,
         },
-        data
+        data,
     }).catch(() => {
         return null;
     });
