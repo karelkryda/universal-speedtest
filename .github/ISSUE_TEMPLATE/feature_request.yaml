@@ -1,0 +1,41 @@
+name: "🚀 Feature request"
+description: Submit a proposal for a new feature
+title: "[Feature]: "
+labels: [ "feature-request" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: checkboxes
+    id: no_duplicate_issues
+    attributes:
+      label: "⚠️ Please verify that this feature request has NOT been raised before."
+      description: Search in the issues sections by clicking [HERE](https://github.com/karelkryda/universal-speedtest/issues?q=feature-request)
+      options:
+        - label: I checked and didn't find similar feature request
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "✏ Description"
+      description: A clear and concise description of what the feature request is.
+      placeholder: ex. You should add property to...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "✔ Solution"
+      description: A clear and concise description of what you want to happen.
+      placeholder: ex. In my use-case, ...
+    validations:
+      required: true
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "📝 Additional context"
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: ex. This feature request could...
+    validations:
+      required: false

@@ -1,0 +1,92 @@
+name: "😥 Bug report"
+description: Submit a bug report to help us improve
+title: "[Bug]: "
+labels: [ "bug" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: no_duplicate_issues
+    attributes:
+      label: "⚠️ Please verify that this bug has NOT been raised before."
+      description: Search in the issues sections by clicking [HERE](https://github.com/karelkryda/universal-speedtest/issues?q=bug).
+      options:
+        - label: I checked and didn't find similar issue
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "✏ Description"
+      description: Describe the problem in detail (you could also upload screenshots).
+      placeholder: ex. Bot crashes when running...
+    validations:
+      required: true
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: "👟 Reproduction steps"
+      description: How did you trigger this bug? Please walk us through it step by step.
+      placeholder: ex. 1) I created a ping command...
+    validations:
+      required: true
+  - type: input
+    id: universal_speedtest_version
+    attributes:
+      label: "🔢 Universal Speedtest version"
+      description: What Universal Speedtest version are you using?
+      placeholder: ex. v3.0.0
+    validations:
+      required: true
+  - type: input
+    id: test_site
+    attributes:
+      label: "🌍 Test page"
+      description: What test page are you using?
+      placeholder: ex speedtest.net
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: "💻 Operating system"
+      description: What operating system are you using?
+      options:
+        - Microsoft Windows
+        - Linux
+        - MacOS
+    validations:
+      required: true
+  - type: input
+    id: nodejs_version
+    attributes:
+      label: "🔢 Node.js version"
+      description: What Node.js version are you using?
+      placeholder: ex. v16.9.0
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "👀 Expected behavior"
+      description: What do you think should have happened?
+      placeholder: ex. The bot should have sent an error message...
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: "😥 Actual behavior"
+      description: What actually happened?
+      placeholder: ex. The bot did not send an error message...
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: "📝 Relevant log output"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false

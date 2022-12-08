@@ -1,0 +1,41 @@
+name: "🌍 New test page request"
+description: Submit a proposal for a new speed test page
+title: "[New test]: "
+labels: [ "new-test-request" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: checkboxes
+    id: no_duplicate_issues
+    attributes:
+      label: "⚠️ Please verify that this feature request has NOT been raised before."
+      description: Search in the issues sections by clicking [HERE](https://github.com/karelkryda/universal-speedtest/issues?q=new-test-request)
+      options:
+        - label: I checked and didn't find similar feature request
+          required: true
+  - type: input
+    id: url
+    attributes:
+      label: "🖇️ Test page URL"
+      description: Link to the test page.
+      placeholder: ex. speedtest.net
+    validations:
+      required: true
+  - type: textarea
+    id: explanation
+    attributes:
+      label: "❓ Why"
+      description: A clear and concise description of why you would like to add this test page.
+      placeholder: ex. In my use-case, ...
+    validations:
+      required: true
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "📝 Additional context"
+      description: Add any other context or screenshots about the test page request here.
+      placeholder: ex. This test page could...
+    validations:
+      required: false
