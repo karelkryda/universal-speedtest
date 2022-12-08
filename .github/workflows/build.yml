@@ -1,9 +1,9 @@
-name: CI - Lint + Tests + Build
+name: Build
 
 on:
   push:
     branches:
-      - dev
+      - development
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup NodeJS 18 🔃
         uses: actions/setup-node@v3
@@ -20,12 +20,6 @@ jobs:
 
       - name: Install 🔧
         run: npm install
-
-      - name: Lint 🧐
-        run: npm run lint
-
-      - name: Test 🚨
-        run: npm test
 
       - name: Build 🏗️
         run: npm run build

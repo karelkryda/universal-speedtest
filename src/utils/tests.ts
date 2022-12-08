@@ -1,17 +1,17 @@
-import configureMeasurements from "convert-units";
-import allMeasures from "convert-units/lib/cjs/definitions";
+import { convert, Data } from "convert";
+import { SpeedUnits } from "../interfaces";
 
 /**
- * Function that converts degrees to radians
+ * Converts degrees to radians.
  * @param degrees - number of degrees
  * @returns number
  */
-export function radians(degrees): number {
+export function radians(degrees: number): number {
     return degrees * Math.PI / 180;
 }
 
 /**
- * Function to obtain the distance of the server
+ * Obtains the distance of the server.
  * @param clientLat - client latitude
  * @param clientLon - client longitude
  * @param serverLat - server latitude
@@ -35,7 +35,7 @@ export function getDistance(clientLat: number, clientLon: number, serverLat: num
 }
 
 /**
- * Function to calculate the average value
+ * Calculates the average value.
  * @param values - an array of values from which to average the value
  */
 export function avg(values: number[]): number {
@@ -43,7 +43,7 @@ export function avg(values: number[]): number {
 }
 
 /**
- * Function to calculate the jitter
+ * Calculates the jitter.
  * @param values - an array of values from which to calculate jitter
  */
 export function jitter(values: number[]): number {
@@ -56,11 +56,11 @@ export function jitter(values: number[]): number {
 }
 
 /**
- * Calculate the overall xth percentile
+ * Calculates the overall xth percentile.
  * @param tests - all completed tests
  * @param percentile - xth percentile
  */
-export function getQuartile(tests, percentile): [] {
+export function getQuartile(tests: number[], percentile: number): number {
     tests.sort((a, b) => a - b);
     const pos = (tests.length - 1) * percentile;
     const base = Math.floor(pos);
@@ -73,33 +73,28 @@ export function getQuartile(tests, percentile): [] {
 }
 
 /**
- * Function that returns a sorted object
- * @param obj - The object to be sorted
- * @returns object
- */
-export function sortObject(obj): object {
-    return Object.keys(obj).sort(function (a, b) {
-        return Number(b) - Number(a)
-    }).reverse().reduce((res, key) => (res[key] = obj[key], res), {});
-}
-
-/**
- * Function that returns the sum of all the elements in an array
+ * Returns the sum of all the elements in an array.
  * @param arr - The array to be summed
  * @returns number
  */
-export function sum(arr): number {
-    return arr.reduce((a, b) => a + b, 0)
+export function sum(arr: number[]): number {
+    return arr.reduce((a, b) => a + b, 0);
 }
 
 /**
- * Function to convert a unit to another unit.
+ * Converts a unit to another unit.
  * @param actualUnit The unit returned by the speed test
  * @param newUnit The new unit to which you want to convert speed
  * @param speed Current network speed
  * @returns number - new speed
  */
-export function convertUnits(actualUnit: string, newUnit: string, speed: number): number {
-    const convert = configureMeasurements(allMeasures);
-    return convert(speed).from(actualUnit.slice(0, -2)).to(newUnit.slice(0, -2));
+export function convertUnits(actualUnit: SpeedUnits, newUnit: SpeedUnits, speed: number): number {
+    try {
+        const actualUnitData: Data = actualUnit.slice(0, -2) as Data;
+        const newUnitData: Data = newUnit.slice(0, -2) as Data;
+
+        return convert(speed, actualUnitData).to(newUnitData);
+    } catch {
+        throw new Error("There was an error in converting the units. Did you enter the correct input units?");
+    }
 }

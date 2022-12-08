@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import { UniversalSpeedtest } from "../src";
+import { UniversalSpeedTest } from "../src";
 
 describe("Cloudflare test", () => {
     it("Run speed.cloudflare.com speed test", async () => {
-        const test = new UniversalSpeedtest({
-            measureUpload: true,
+        const test = new UniversalSpeedTest({
+            measureUpload: true
         });
-        const result = await test.runCloudflareCom();
+        const result = await test.runCloudflareTest();
 
         expect(result.ping).to.be.below(60);
         expect(result.uploadSpeed).not.to.be.undefined;

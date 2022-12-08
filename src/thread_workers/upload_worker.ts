@@ -1,18 +1,18 @@
-import { performance } from "perf_hooks";
 import { parentPort, workerData } from "worker_threads";
-import { createRequest } from "../helpers/UrllibHelper";
-import { HTTPUploader } from "../helpers/HTTPUploader";
+import { HTTPUploader } from "../helpers";
+import { WorkerData } from "../interfaces";
+import { createRequest } from "../utils";
 
 const {
     request,
     wait,
     startTime,
     timeout,
-    urllibOptions,
-} = workerData;
+    urllibOptions
+} = workerData as WorkerData;
 
-if (wait || (((performance.now() - startTime) / 1000) <= timeout)) {
-    const thread = new HTTPUploader(createRequest(request[0], request[1], request[2], request[3], request[4], request[5], false, urllibOptions), request[6]);
+if (wait || (((Date.now() - startTime) / 1000) <= timeout)) {
+    const thread = new HTTPUploader(createRequest(request.url, request.headers, request.body, request.cacheBump, request.timeout, urllibOptions), request.totalData);
     thread.run().then(result => {
         parentPort.postMessage(result);
     });

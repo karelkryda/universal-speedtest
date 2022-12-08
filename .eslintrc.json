@@ -19,57 +19,32 @@
     "sourceType": "module"
   },
   "rules": {
-    "no-console": "off",
+    "no-cyonsole": "off",
     "linebreak-style": "off",
-    "camelcase": [ "warn", {
-      "properties": "never",
-      "ignoreImports": true
-    }],
-    "no-unused-vars": [ "warn", {
-      "args": "none"
-    }],
-    "quotes": [ "error", "double", {
-      "allowTemplateLiterals": true
-    }],
-    "array-bracket-spacing": [ "warn", "always", {
-      "singleValue": true,
-      "objectsInArrays": false,
-      "arraysInArrays": false
-    }],
-    "space-before-function-paren": [ "error", {
-      "anonymous": "always",
-      "named": "never",
-      "asyncArrow": "always"
-    }],
-    "object-curly-spacing": [ "error", "always" ],
-    "object-property-newline": "error",
-    "brace-style": "error",
-    "no-var": "error",
-    "keyword-spacing": [ "error", {
-      "before": true
-    }],
-    "arrow-spacing": "warn",
-    "no-constant-condition": [ "error", {
-      "checkLoops": false
-    }],
-    "space-before-blocks": [ "error" ],
-    "no-multiple-empty-lines": [ "warn", {
-      "max": 1,
-      "maxBOF": 0
-    }],
-    "lines-between-class-members": [ "warn", "always", {
-      "exceptAfterSingleLine": true
-    }],
-    "no-unneeded-ternary": "error",
-    "array-bracket-newline": [ "error", "consistent" ],
-    "eol-last": [ "error", "always" ],
-    "comma-dangle": [ "warn", "only-multiline" ],
-    "no-empty": [ "error", {
-      "allowEmptyCatch": true
-    }],
-    "one-var": [ "error", "never" ],
-    "max-statements-per-line": [ "error", {
-      "max": 1
-    }]
+    "quotes": [
+      "error",
+      "double",
+      {
+        "allowTemplateLiterals": true
+      }
+    ],
+    "keyword-spacing": [
+      "error",
+      {
+        "before": true
+      }
+    ],
+    "space-before-blocks": [
+      "error"
+    ],
+    "object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "no-var": "warn",
+    "@typescript-eslint/no-var-requires": 1,
+    "semi": "error",
+    "semi-style": "error",
+    "no-extra-semi": "error"
   }
 }

@@ -1,0 +1,68 @@
+name: CD - Development Build
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  production-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS 18 🔃
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Use CI Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node18-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node18-
+
+      - name: Install 🔧
+        run: npm install
+
+      - name: Build 🏗️
+        run: npm run build
+
+      - name: Push new code 🚀
+        if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+        run: |
+          echo -e "\n# Initialize some useful variables"
+          REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          BRANCH_OR_TAG=`awk -F/ '{print $2}' <<< $GITHUB_REF`
+          CURRENT_BRANCH=`awk -F/ '{print $NF}' <<< $GITHUB_REF`
+          if [ "$BRANCH_OR_TAG" == "heads" ]; then
+            SOURCE_TYPE="branch"
+          else
+            SOURCE_TYPE="tag"
+          fi
+          echo -e "\n# Checkout the repo in the target branch"
+          TARGET_BRANCH="build"
+          git clone $REPO out -b $TARGET_BRANCH
+          echo -e "\n# Remove any old files in the dist folder"
+          rm -rfv out/dist/*
+          echo -e "\n# Move the generated code to the newly-checked-out repo, to be committed and pushed"
+          rsync -vaI package.json out/
+          rsync -vaI package-lock.json out/
+          rsync -vaI README.md out/
+          rsync -vaI LICENSE out/
+          rsync -vaI dist/ out/dist
+          echo -e "\n# Commit and push"
+          cd out
+          git add --all .
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_EMAIL}"
+          git commit -m "build: tsc build for ${GITHUB_SHA}" || true
+          git push origin $TARGET_BRANCH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: karelkryda
+          GITHUB_EMAIL: ${{ secrets.EMAIL }}

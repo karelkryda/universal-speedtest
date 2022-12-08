@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import { UniversalSpeedtest } from "../src";
+import { UniversalSpeedTest } from "../src";
 
 describe("Speedtest test", () => {
     it("Run Speedtest.com speed test", async () => {
-        const test = new UniversalSpeedtest({
-            wait: true,
+        const test = new UniversalSpeedTest({
+            wait: true
         });
-        const result = await test.runSpeedtestNet();
+        const result = await test.runSpeedtestTest();
 
         expect(result.ping).to.be.below(60);
         expect(result.uploadSpeed).to.be.undefined;

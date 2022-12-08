@@ -1,25 +1,30 @@
-import { sum } from "../Utils";
+import { sum } from "../utils";
+import { HttpClientResponse } from "urllib/src/Response";
 
 export class HTTPUploader {
-    private readonly request;
-    private readonly total;
+    private readonly request: Promise<HttpClientResponse>;
+    private readonly total: number[];
 
     /**
      * Constructor for HTTPUploader class
      * @param request - Pre-created urllib request
      * @param total - Array with total sizes of uploaded data
      */
-    constructor(request, total) {
+    constructor(request: Promise<HttpClientResponse>, total: number[]) {
         this.request = request;
         this.total = total;
     }
 
     /**
-     * Run pre-created urllib request
+     * Runs pre-created urllib request.
      * @returns Promise
      */
     public async run(): Promise<number> {
-        await this.request;
-        return sum(this.total);
+        try {
+            await this.request;
+            return sum(this.total);
+        } catch {
+            return 0;
+        }
     }
 }
