@@ -19,7 +19,7 @@ jobs:
           node-version: 18
 
       - name: Use CI Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node18-${{ hashFiles('**/package-lock.json') }}
