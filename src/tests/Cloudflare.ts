@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from "http";
-import { HttpClientResponse } from "urllib/src/Response";
-import { CFMeasurementServer, CFTestConfig, CloudflareResult, Options, SpeedUnits } from "../interfaces";
-import { avg, convertUnits, createRequest, getDistance, getQuartile, jitter } from "../utils";
+import { HttpClientResponse } from "urllib";
+import { CFMeasurementServer, CFTestConfig, CloudflareResult, Options, SpeedUnits } from "../interfaces/index.js";
+import { avg, convertUnits, createRequest, getDistance, getQuartile, jitter } from "../utils/index.js";
 
 export class Cloudflare {
     private readonly options: Options;
@@ -38,7 +38,7 @@ export class Cloudflare {
 
         if (this.options.debug) {
             console.debug("speed.cloudflare.com data were obtained");
-            console.debug(`Client - ${this.result.client.ip} (${this.result.client.countryCode})`);
+            console.debug(`Client - ${ this.result.client.ip } (${ this.result.client.countryCode })`);
         }
 
         // Get test server and fastest server
@@ -54,7 +54,7 @@ export class Cloudflare {
         this.result.jitter = latency[1];
 
         if (this.options.debug)
-            console.debug(`Server: ${this.closestServer.iata} (${this.closestServer.city} - ${this.closestServer.region}), ${this.closestServer.distance.toFixed(2)} km, ${this.result.ping} ms`);
+            console.debug(`Server: ${ this.closestServer.iata } (${ this.closestServer.city } - ${ this.closestServer.region }), ${ this.closestServer.distance.toFixed(2) } km, ${ this.result.ping } ms`);
 
         // Test download speed
         if (this.options.measureDownload) {
@@ -62,7 +62,7 @@ export class Cloudflare {
             this.result.downloadSpeed = downloadSpeed;
 
             if (this.options.debug)
-                console.debug(`Download: ${downloadSpeed} ${this.options.downloadUnit}`);
+                console.debug(`Download: ${ downloadSpeed } ${ this.options.downloadUnit }`);
         }
 
         // Test upload speed
@@ -71,12 +71,12 @@ export class Cloudflare {
             this.result.uploadSpeed = uploadSpeed;
 
             if (this.options.debug)
-                console.debug(`Upload: ${uploadSpeed} ${this.options.uploadUnit}`);
+                console.debug(`Upload: ${ uploadSpeed } ${ this.options.uploadUnit }`);
         }
 
         const end = Date.now();
         if (this.options.debug)
-            console.debug(`Test performed in ${((end - start) / 1000).toFixed(1)} seconds`);
+            console.debug(`Test performed in ${ ((end - start) / 1000).toFixed(1) } seconds`);
 
         this.result.totalTime = Number(((end - start) / 1000).toFixed(1));
         return this.result;
@@ -141,7 +141,7 @@ export class Cloudflare {
      * @private
      */
     private doDownload(bytes: number): Promise<HttpClientResponse> {
-        return createRequest(`https://speed.cloudflare.com/__down?bytes=${bytes}`, {}, null, null, this.options.timeout, this.options.urllibOptions);
+        return createRequest(`https://speed.cloudflare.com/__down?bytes=${ bytes }`, {}, null, null, this.options.timeout, this.options.urllibOptions);
     }
 
     /**
@@ -189,9 +189,9 @@ export class Cloudflare {
         const bytesData = "0".repeat(bytes);
 
         const headers: IncomingHttpHeaders = {};
-        headers["content-length"] = `${Buffer.byteLength(bytesData)}`;
+        headers["content-length"] = `${ Buffer.byteLength(bytesData) }`;
 
-        return createRequest(`https://speed.cloudflare.com/__up`, headers, bytesData, null, this.options.timeout, this.options.urllibOptions);
+        return createRequest("https://speed.cloudflare.com/__up", headers, bytesData, null, this.options.timeout, this.options.urllibOptions);
     }
 
     /**

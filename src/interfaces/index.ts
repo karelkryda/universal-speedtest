@@ -1,3 +1,3 @@
-export * from "./general";
-export * from "./Cloudflare";
-export * from "./Speedtest";
+export * from "./general.js";
+export * from "./Cloudflare.js";
+export * from "./Speedtest.js";

@@ -1,2 +1,2 @@
-export * from "./Cloudflare";
-export * from "./Speedtest";
+export * from "./Cloudflare.js";
+export * from "./Speedtest.js";

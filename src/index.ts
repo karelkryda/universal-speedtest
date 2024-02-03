@@ -1,6 +1,6 @@
-import { CloudflareResult, Options, SpeedtestResult, SpeedUnits } from "./interfaces";
-import { convertUnits } from "./utils";
-import { Cloudflare, Speedtest } from "./tests";
+import { CloudflareResult, Options, SpeedtestResult, SpeedUnits } from "./interfaces/index.js";
+import { convertUnits } from "./utils/index.js";
+import { Cloudflare, Speedtest } from "./tests/index.js";
 
 export class UniversalSpeedTest {
     private readonly options: Options;

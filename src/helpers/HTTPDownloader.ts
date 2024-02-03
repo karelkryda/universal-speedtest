@@ -1,4 +1,4 @@
-import { HttpClientResponse } from "urllib/src/Response";
+import { HttpClientResponse } from "urllib";
 
 export class HTTPDownloader {
     private readonly request: Promise<HttpClientResponse>;

@@ -1,7 +1,5 @@
 import { IncomingHttpHeaders } from "http";
-import { request } from "urllib";
-import { RequestOptions } from "urllib/src/Request";
-import { HttpClientResponse } from "urllib/src/Response";
+import { HttpClientResponse, request, RequestOptions } from "urllib";
 import { XMLValidator } from "fast-xml-parser";
 import { parseString } from "xml2js";
 
@@ -15,7 +13,7 @@ import { parseString } from "xml2js";
  * @param options - custom request options
  */
 export function createRequest(url: string, headers: IncomingHttpHeaders, body: string, cacheBump: string = null, timeout = 10, options: RequestOptions): Promise<HttpClientResponse> {
-    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/3.0.0";
+    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
     headers["cache-control"] = "no-cache";
 
     return request(url + ((cacheBump !== null) ? ((url.includes("?") ? "&" : "?") + "x=" + Date.now() + cacheBump) : ""), {
@@ -35,9 +33,9 @@ export function createRequest(url: string, headers: IncomingHttpHeaders, body: s
  * @param xml - XML string to be parsed
  * @param callback - callback to which the JSON object will be returned
  */
-export function parseXML(xml: string, callback): void {
+export function parseXML(xml: string, callback: (response: any) => void): void {
     if (XMLValidator.validate(xml) === true)
-        parseString(xml, (error, result) => {
+        parseString(xml, (_, result) => {
             return callback(result);
         });
     else

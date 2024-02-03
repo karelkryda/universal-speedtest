@@ -1,3 +1,3 @@
-export * from "./HTTPDownloader";
-export * from "./HTTPUploader";
-export * from "./HTTPUploaderData";
+export * from "./HTTPDownloader.js";
+export * from "./HTTPUploader.js";
+export * from "./HTTPUploaderData.js";

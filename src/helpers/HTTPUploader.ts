@@ -1,5 +1,5 @@
-import { sum } from "../utils";
-import { HttpClientResponse } from "urllib/src/Response";
+import { sum } from "../utils/index.js";
+import { HttpClientResponse } from "urllib";
 
 export class HTTPUploader {
     private readonly request: Promise<HttpClientResponse>;

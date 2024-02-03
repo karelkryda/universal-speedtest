@@ -109,3 +109,6 @@ dist
 # Test file
 test.ts
 tests/test.test.ts
+
+# TypeScript HYbridizer
+.tshy*

@@ -2,9 +2,9 @@
 
 <hr>
 <div>
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Lint?label=Lint&logo=github&style=for-the-badge" alt="Lint check">
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Build?logo=github&style=for-the-badge" alt="Build check">
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Tests?label=Tests&logo=github&style=for-the-badge" alt="Tests">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/lint.yml?branch=main&label=Lint&logo=github&style=for-the-badge" alt="Lint check">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/build.yml?branch=main&logo=github&style=for-the-badge" alt="Build check">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/tests.yml?branch=main&label=Tests&logo=github&style=for-the-badge" alt="Tests">
 </div>
 <div>
     <img src="https://img.shields.io/npm/v/universal-speedtest?logo=npm&style=for-the-badge" alt="Npm version">
@@ -20,7 +20,7 @@
 
 The Universal Speedtest library allows you to measure the speed of your Internet connection using various speed tests.
 
-# 🔧 Installation
+## 🔧 Installation
 
 ### Latest release
 
@@ -34,15 +34,19 @@ $ npm install --save universal-speedtest
 $ npm install --save github:karelkryda/universal-speedtest#build
 ```
 
-# 📗 Documentation
+## 📗 Documentation
 
 The official documentation can be found [here](https://karel-kryda.gitbook.io/universal-speedtest/).
 
+## 🛑 Known limitations
+
+According to the reported problems, the library cannot currently be used together with React Native (and probably not
+even in the browser). This is due to the use of `perf_hooks` in the `urllib` library, which is used to perform speed
+tests.
+
 ## 📢 Issues reporting
 
-I would like to ask you to report any errors so that I can correct them.
-<br>
-A new version of the library, 3.0.0, has
-recently been released and may contain errors.
+A new major version of the library, 3.0.0, has been released and may contain bugs. I would like to ask you to report any
+problems so that I can fix them.
 
 Thank you for your understanding

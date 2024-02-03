@@ -1,17 +1,12 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2022",
-    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2023"],
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "dist"
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "tests"
-  ]
+  "exclude": ["node_modules", "tests"]
 }

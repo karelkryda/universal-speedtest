@@ -1,27 +1,32 @@
 {
   "name": "universal-speedtest",
+  "description": "Test your network speed using various speed testing sites.",
   "version": "3.0.0",
-  "description": "This library allows you to test speed with various speed testing sites.",
-  "main": "dist/index.js",
+  "main": "./dist/commonjs/index.js",
+  "type": "module",
+  "types": "./dist/commonjs/index.d.ts",
   "scripts": {
-    "test": "ts-mocha tests/**/*.test.ts",
-    "build": "tsc",
-    "coverage": "nyc npm test",
+    "build": "tshy && npm run updateVersion",
+    "test": "jest",
     "lint": "eslint . --ext .ts",
-    "lintFix": "eslint . --ext .ts --fix"
+    "lintFix": "eslint . --ext .ts --fix",
+    "updateVersion": "node updateVersion.js"
   },
   "author": "Karel Krýda (https://github.com/karelkryda)",
-  "license": "GPL-3.0",
-  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karelkryda/universal-speedtest.git"
+  },
+  "homepage": "https://github.com/karelkryda/universal-speedtest#readme",
+  "bugs": {
+    "url": "https://github.com/karelkryda/universal-speedtest/issues"
+  },
   "files": [
     "dist",
     "LICENSE",
     "README.md"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/karelkryda/universal-speedtest.git"
-  },
   "keywords": [
     "speed",
     "test",
@@ -31,35 +36,49 @@
     "network",
     "fast.com",
     "api",
-    "netmetr.cz",
     "universal",
     "universal speed test",
     "cloudflare"
   ],
-  "bugs": {
-    "url": "https://github.com/karelkryda/universal-speedtest/issues"
-  },
-  "homepage": "https://github.com/karelkryda/universal-speedtest#readme",
-  "dependencies": {
-    "convert": "^4.8.0",
-    "fast-xml-parser": "^4.0.12",
-    "urllib": "^3.7.0",
-    "xml2js": "^0.4.23"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.11",
-    "@typescript-eslint/eslint-plugin": "^5.46.0",
-    "@typescript-eslint/parser": "^5.46.0",
-    "chai": "^4.3.7",
-    "eslint": "^8.29.0",
-    "mocha": "^10.1.0",
-    "nyc": "^15.1.0",
-    "ts-mocha": "^10.0.0",
-    "typescript": "^4.9.4"
-  },
   "engines": {
     "node": ">=12.0.0"
+  },
+  "dependencies": {
+    "convert": "^4.14.1",
+    "fast-xml-parser": "^4.3.4",
+    "urllib": "^3.22.2",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.16",
+    "@types/xml2js": "^0.4.14",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tshy": "^1.11.0",
+    "typescript": "^5.3.3"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    }
+  },
+  "tshy": {
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
   }
 }

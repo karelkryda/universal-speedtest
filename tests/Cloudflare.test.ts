@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import { UniversalSpeedTest } from "../src";
+import { UniversalSpeedTest } from "../src/index.js";
 
 describe("Cloudflare test", () => {
     it("Run speed.cloudflare.com speed test", async () => {
@@ -8,8 +7,8 @@ describe("Cloudflare test", () => {
         });
         const result = await test.runCloudflareTest();
 
-        expect(result.ping).to.be.below(60);
-        expect(result.uploadSpeed).not.to.be.undefined;
-        expect(result.downloadSpeed).to.be.above(20);
-    }).timeout(120000);
+        expect(result.ping).toBeLessThan(60);
+        expect(result.uploadSpeed).toBeGreaterThan(6);
+        expect(result.downloadSpeed).toBeGreaterThan(20);
+    }, 120000);
 });

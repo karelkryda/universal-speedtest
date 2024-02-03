@@ -1,5 +1,5 @@
 import { convert, Data } from "convert";
-import { SpeedUnits } from "../interfaces";
+import { SpeedUnits } from "../interfaces/index.js";
 
 /**
  * Converts degrees to radians.

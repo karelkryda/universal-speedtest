@@ -1,7 +1,7 @@
 import { parentPort, workerData } from "worker_threads";
-import { HTTPDownloader } from "../helpers";
-import { createRequest } from "../utils";
-import { WorkerData } from "../interfaces";
+import { HTTPDownloader } from "../helpers/index.js";
+import { createRequest } from "../utils/index.js";
+import { WorkerData } from "../interfaces/index.js";
 
 const {
     request,

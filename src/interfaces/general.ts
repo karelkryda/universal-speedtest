@@ -1,5 +1,5 @@
 import { IncomingHttpHeaders } from "http";
-import { RequestOptions } from "urllib/src/Request";
+import { RequestOptions } from "urllib";
 
 enum SpeedUnits {
     Bps = "Bps",

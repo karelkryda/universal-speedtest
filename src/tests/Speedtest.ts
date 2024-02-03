@@ -1,15 +1,15 @@
 import * as path from "path";
 import { Worker } from "worker_threads";
 import { IncomingHttpHeaders } from "http";
-import { HTTPUploaderData } from "../helpers";
-import { Options, Request, SpeedtestResult, SpeedUnits, STMeasurementServer } from "../interfaces";
-import { convertUnits, createRequest, jitter, parseXML, sum } from "../utils";
+import { HTTPUploaderData } from "../helpers/index.js";
+import { Options, Request, SpeedtestResult, SpeedUnits, STMeasurementServer } from "../interfaces/index.js";
+import { convertUnits, createRequest, jitter, parseXML, sum } from "../utils/index.js";
 
 export class Speedtest {
     private readonly options: Options;
     private readonly result: SpeedtestResult = {} as SpeedtestResult;
 
-    private testConfig;
+    private testConfig: any;
     private readonly uploadSizes = [ 32768, 65536, 131072, 262144, 524288, 1048576, 7340032 ];
     private servers: STMeasurementServer[];
     private fastestServer: STMeasurementServer;
@@ -41,7 +41,7 @@ export class Speedtest {
 
         if (this.options.debug) {
             console.debug("speedtest.net config was obtained");
-            console.debug(`Client - ${this.result.client.isp} (${this.result.client.ip})`);
+            console.debug(`Client - ${ this.result.client.isp } (${ this.result.client.ip })`);
         }
 
         // Get test server and fastest server
@@ -58,7 +58,7 @@ export class Speedtest {
         };
 
         if (this.options.debug)
-            console.debug(`Server: ${this.fastestServer.sponsor} (${this.fastestServer.name} - ${this.fastestServer.country}), ${this.fastestServer.distance.toFixed(2)} km, ${this.fastestServer.latency.toFixed(3)} ms`);
+            console.debug(`Server: ${ this.fastestServer.sponsor } (${ this.fastestServer.name } - ${ this.fastestServer.country }), ${ this.fastestServer.distance.toFixed(2) } km, ${ this.fastestServer.latency.toFixed(3) } ms`);
 
         // Test download speed
         if (this.options.measureDownload) {
@@ -66,7 +66,7 @@ export class Speedtest {
             this.result.downloadSpeed = downloadSpeed;
 
             if (this.options.debug)
-                console.debug(`Download: ${downloadSpeed} ${this.options.downloadUnit}`);
+                console.debug(`Download: ${ downloadSpeed } ${ this.options.downloadUnit }`);
         }
 
         // Test upload speed
@@ -75,12 +75,12 @@ export class Speedtest {
             this.result.uploadSpeed = uploadSpeed;
 
             if (this.options.debug)
-                console.debug(`Upload: ${uploadSpeed} ${this.options.uploadUnit}`);
+                console.debug(`Upload: ${ uploadSpeed } ${ this.options.uploadUnit }`);
         }
 
         const end = Date.now();
         if (this.options.debug)
-            console.debug(`Test performed in ${((end - start) / 1000).toFixed(1)} seconds`);
+            console.debug(`Test performed in ${ ((end - start) / 1000).toFixed(1) } seconds`);
 
         this.result.totalTime = Number(((end - start) / 1000).toFixed(1));
         return this.result;
@@ -146,7 +146,7 @@ export class Speedtest {
      * @returns Promise
      */
     private async getServersList(limit = 5): Promise<void> {
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${limit}`;
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ limit }`;
         try {
             const { data } = await createRequest(serversUrl, {}, null, null, this.options.timeout, this.options.urllibOptions);
             const servers: STMeasurementServer[] = JSON.parse(data);
@@ -166,7 +166,7 @@ export class Speedtest {
         try {
             for (const server of this.servers) {
                 const totalTimes = [];
-                const url = `${path.dirname(server.url)}/latency.txt`;
+                const url = `${ path.dirname(server.url) }/latency.txt`;
 
                 for (let i = 0; i < 3; i++) {
                     const start = Date.now();
