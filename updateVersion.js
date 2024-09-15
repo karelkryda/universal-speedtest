@@ -8,7 +8,7 @@ import { join } from "node:path";
     const root = process.cwd();
     const files = [
         join(root, "dist/commonjs/utils/general.js"),
-        join(root, "dist/esm//utils/general.js"),
+        join(root, "dist/esm/utils/general.js"),
     ];
 
     // Replace package version in all files

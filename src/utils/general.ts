@@ -1,35 +1,42 @@
-import { IncomingHttpHeaders } from "http";
-import { HttpClientResponse, request, RequestOptions } from "urllib";
+import { WebSocket } from "ws";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 
-/**
- * Creates an urllib request for speedtest.net
- * @param url - URL address
- * @param headers - optional request headers
- * @param body - data to be sent
- * @param cacheBump - cache override bump
- * @param timeout - request timeout
- * @param options - custom request options
- */
-export function createRequest(url: string, headers: IncomingHttpHeaders, body: string, cacheBump: string = null, timeout = 10, options: RequestOptions): Promise<HttpClientResponse> {
-    headers["user-agent"] = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
-    headers["cache-control"] = "no-cache";
+const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
 
-    return request(url + ((cacheBump !== null) ? ((url.includes("?") ? "&" : "?") + "x=" + Date.now() + cacheBump) : ""), {
-        method: (body !== null) ? "POST" : "GET",
-        timeout: timeout * 1000,
-        ...options,
+/**
+ * Creates a fetch request.
+ * @param url - URL address
+ * @param abortSignal - request abort signal
+ * @returns {Promise<Response>} fetch request
+ */
+export function createRequest(url: string, abortSignal?: AbortSignal): Promise<Response> {
+    return fetch(url, {
         headers: {
-            ...headers,
-            ...options?.headers
+            "User-Agent": USER_AGENT,
         },
-        data: body
+        signal: abortSignal
+    });
+}
+
+/**
+ * Creates a WebSocket client connection to the specified server.
+ * @param {string} host - Server to send requests to
+ * @private
+ * @returns {WebSocket} WebSocket client connection
+ */
+export function createSocketClient(host: string): WebSocket {
+    return new WebSocket(`wss://${ host }/ws`, {
+        headers: {
+            "User-Agent": USER_AGENT
+        },
+        timeout: 10
     });
 }
 
 /**
  * Parses XML string to JSON object.
  * @param xml - XML string to be parsed
+ * @returns {Promise<any>} XML as object
  */
 export function parseXML(xml: string): Promise<any> {
     if (XMLValidator.validate(xml) === true)

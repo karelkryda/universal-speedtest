@@ -46,7 +46,6 @@
   "dependencies": {
     "convert": "^5.4.0",
     "fast-xml-parser": "^4.5.0",
-    "urllib": "^4.3.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
@@ -80,5 +79,6 @@
       "./package.json": "./package.json",
       ".": "./src/index.ts"
     }
-  }
+  },
+  "module": "./dist/esm/index.js"
 }

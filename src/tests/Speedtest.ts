@@ -12,13 +12,19 @@ import {
     STUploadResult,
     USOptions
 } from "../interfaces/index.js";
-import { average, convertMilesToKilometers, convertUnits, createRequest, parseXML } from "../utils/index.js";
+import {
+    average,
+    convertMilesToKilometers,
+    convertUnits,
+    createRequest,
+    createSocketClient,
+    parseXML
+} from "../utils/index.js";
 
 /**
  * Ookla Speedtest test.
  */
 export class Speedtest {
-    private readonly USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
     private readonly options: USOptions;
 
     /**
@@ -58,7 +64,7 @@ export class Speedtest {
         }
 
         // Test latency and jitter against the fastest server
-        const socketClient = this.createSocketClient(bestServer.host);
+        const socketClient = createSocketClient(bestServer.host);
         const pingResult = await this.getLatencyAndJitter(socketClient, testUUID, 10, 20, true);
         if (this.options.debug) {
             console.debug(`Your latency is ${ pingResult.latency } ms and jitter is ${ pingResult.jitter } ms`);
@@ -107,8 +113,10 @@ export class Speedtest {
      */
     private async getConfig(): Promise<STConfig> {
         try {
-            const { data } = await createRequest("https://www.speedtest.net/speedtest-config.php", {}, null, null, this.options.timeout, this.options.urllibOptions);
-            return ((await parseXML(data.toString())).settings as STConfig);
+            const response = await createRequest("https://www.speedtest.net/speedtest-config.php");
+            const body = await response.text();
+
+            return ((await parseXML(body)).settings as STConfig);
         } catch {
             throw new Error("An error occurred while retrieving test configuration from speedtest.net.");
         }
@@ -124,8 +132,10 @@ export class Speedtest {
         let testsInProgress = 0;
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true`;
         try {
-            const { data } = await createRequest(serversUrl, {}, null, null, this.options.timeout, this.options.urllibOptions);
-            const servers: STMeasurementServer[] = JSON.parse(data);
+            const response = await createRequest(serversUrl);
+            const body = await response.text();
+
+            const servers: STMeasurementServer[] = JSON.parse(body);
             return new Promise(resolve => {
                 servers.forEach(server => {
                     // Convert info to correct types
@@ -138,7 +148,7 @@ export class Speedtest {
 
                     // Measure server latency and jitter in parallel
                     testsInProgress++;
-                    const socketClient = this.createSocketClient(server.host);
+                    const socketClient = createSocketClient(server.host);
                     this.getLatencyAndJitter(socketClient, null, 5, 15, false).then(({ latency }) => {
                         server.latency = latency;
                         testsInProgress--;
@@ -162,21 +172,6 @@ export class Speedtest {
      */
     private async getBestServers(servers: STMeasurementServer[]): Promise<STMeasurementServer[]> {
         return servers.sort((serverA, serverB) => serverA.latency - serverB.latency).slice(0, 4);
-    }
-
-    /**
-     * Creates a WebSocket client connection to the specified server.
-     * @param {string} host - Server to send requests to
-     * @private
-     * @returns {WebSocket} WebSocket client connection
-     */
-    private createSocketClient(host: string): WebSocket {
-        return new WebSocket(`wss://${ host }/ws`, {
-            headers: {
-                "User-Agent": this.USER_AGENT
-            },
-            timeout: 10
-        });
     }
 
     /**
@@ -247,8 +242,6 @@ export class Speedtest {
         });
     }
 
-    private readonly delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
     /**
      * Performs download speed measurement and returns the result.
      * @param {STMeasurementServer[]} servers - All available measurement servers
@@ -276,7 +269,8 @@ export class Speedtest {
             }
 
             increaseConnections();
-            fetch(`https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`, { signal: abortSignal }).then(response => {
+            const downloadUrl = `https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`;
+            createRequest(downloadUrl, abortSignal).then(response => {
                 if (response.ok) {
                     // Handler for capturing downloaded bytes
                     const readChunk = ({ done, value }) => {
@@ -309,7 +303,7 @@ export class Speedtest {
             servers.forEach(openServerConnection);
 
             // Start load latency test
-            const socketClient = this.createSocketClient(bestServer.host);
+            const socketClient = createSocketClient(bestServer.host);
             const latencyTest = this.getLatencyAndJitter(socketClient, testUUID, -1, 15, true);
 
             const checkInterval = setInterval(async () => {
@@ -371,241 +365,4 @@ export class Speedtest {
 
         return samplesWithoutTwoHighest.slice(0, topTwoThirdsIndex).reduce((acc, val) => acc + val, 0) / topTwoThirdsIndex;
     }
-
-    // private async openDownloadConnection(signal: AbortSignal, server: STMeasurementServer, uuid: string, callback: (bytes: number) => void) {
-    //     const lowerConnections = () => this.openedConnections--;
-    //     const response = await fetch(`https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ uuid }`, { signal });
-    //     if (response.ok) {
-    //         const appendBytes = ({ done, value }) => {
-    //             if (!done) {
-    //                 callback(value.length);
-    //                 reader.read().then(appendBytes).catch(lowerConnections);
-    //             } else {
-    //                 lowerConnections();
-    //             }
-    //         };
-    //         const reader = response.body.getReader();
-    //         reader.read().then(appendBytes).catch(lowerConnections);
-    //     } else {
-    //         this.openedConnections--;
-    //     }
-    // }
-
-    // private async testDownloadSpeedss(servers: STMeasurementServer[]): Promise<number> {
-    //     let prevReqTimes: any = [];
-    //     let downloads = [];
-    //     let sockets: WebSocket[] = [];
-    //     return new Promise((resolve, reject) => {
-    //         setTimeout(() => {
-    //             sockets.forEach(socket => socket.close());
-    //             resolve(average(downloads, 2));
-    //         }, 15_000);
-    //         servers.forEach(server => {
-    //             prevReqTimes[server.id] = [];
-    //             // for (let i = 0; i < 4; i++) {
-    //             // Measure server latency and jitter in parallel
-    //             const ws = this.createSocketClient(server.host);
-    //             sockets.push(ws);
-    //
-    //             ws.on("error", (error) => reject(error));
-    //
-    //             ws.on("open", () => {
-    //                 ws.send("HI");
-    //                 ws.send("PING ");
-    //             });
-    //
-    //             ws.on("message", (data) => {
-    //                 const message = data.toString();
-    //                 if (message.includes("PONG")) {
-    //                     console.log("pong");
-    //                     const now = Date.now();
-    //                     ws.send(`DOWNLOAD 8000000`);
-    //                     prevReqTimes[server.id]/*[i]*/ = now;
-    //                 } else if (message.includes("DOWNLOAD ")) {
-    //                     console.log("DOWN");
-    //                     const now = Date.now();
-    //                     const elapsedTime = now - prevReqTimes[server.id]/*[i]*/;
-    //                     // const download = Number((((250000 / (elapsedTime / 1000)) * 8.0) / 1000.0 / 1000.0).toFixed(2));
-    //                     const bitsPerByte = 8;
-    //                     const bits = 8000000 * bitsPerByte;
-    //                     const mbps = (bits / (elapsedTime * 0.001)) * 1e-6;
-    //                     const download = mbps;
-    //                     console.log("current download: " + download);
-    //                     downloads.push(download);
-    //                     ws.send(`DOWNLOAD 8000000`);
-    //                     prevReqTimes[server.id]/*[i]*/ = now;
-    //                 } else if (!message.includes("HELLO")) {
-    //                     console.log(message);
-    //                     console.error("WTF");
-    //                 }
-    //             });
-    //             // }
-    //         });
-    //     });
-    // }
-
-    /**
-     * Returns the download speed.
-     * @private
-     * @returns {Promise<number>} Download speed
-     */
-    // private async testDownloadSpeeds(host: string): Promise<number> {
-    //     const urls = [];
-    //     const sizes = [ 245388, 505544, 1118012, 1986284, 4468241,
-    //         7907740, 12407926, 17816816, 24262167,
-    //         31625365 ];
-    //
-    //     try {
-    //         for (const size of sizes) {
-    //             const counts = 3;
-    //             for (let i = 0; i < counts; i++)
-    //                 urls.push(`https://${ host }/download?size=${ size }`);
-    //         }
-    //
-    //         const requestCount = urls.length;
-    //         const requests: Request[] = [];
-    //         urls.forEach((url, i) => {
-    //             console.log(url);
-    //             requests.push({
-    //                 url: url,
-    //                 headers: {},
-    //                 body: null,
-    //                 cacheBump: i.toString(),
-    //                 // timeout: (this.options.wait) ? this.options.timeout : this.testConfig.lengths.download,
-    //                 timeout: 60000,
-    //                 totalData: null
-    //             });
-    //         });
-    //
-    //         // const maxThreads = this.testConfig.threads.download;
-    //         const maxThreads = 4;
-    //         const inFlight = { "threads": 0 };
-    //         const finished = [];
-    //         const start = Date.now();
-    //
-    //         const __dirname = path.resolve();
-    //         for (const request of requests) {
-    //             while (inFlight.threads >= maxThreads)
-    //                 await this.delay(0.001);
-    //
-    //             const worker = new Worker(__dirname + "/src/thread_workers/download_worker.ts", {
-    //                 workerData: {
-    //                     path: "./download_worker.ts",
-    //                     request,
-    //                     wait: this.options.wait,
-    //                     startTime: start,
-    //                     // timeout: this.testConfig.lengths.download,
-    //                     timeout: 60000,
-    //                     urllibOptions: this.options.urllibOptions
-    //                 }
-    //             });
-    //
-    //             worker.on("message", (result) => {
-    //                 inFlight.threads--;
-    //                 finished.push(sum(result));
-    //             });
-    //
-    //             inFlight.threads++;
-    //         }
-    //
-    //         while (finished.length < requestCount)
-    //             await this.delay(0.001);
-    //
-    //         const end = Date.now();
-    //         const bytesReceived = sum(finished);
-    //         console.log(bytesReceived);
-    //         let download = (
-    //             (bytesReceived / ((end - start) / 1000)) * 8.0
-    //         );
-    //         // if (download > 100000)
-    //         //     this.testConfig.threads.upload = 8;
-    //
-    //         download = Number((download / 1000.0 / 1000.0).toFixed(2));
-    //
-    //         if (this.options.downloadUnit !== SpeedUnits.Mbps)
-    //             return convertUnits(SpeedUnits.Mbps, this.options.downloadUnit, download);
-    //         else
-    //             return download;
-    //     } catch (e) {
-    //         console.error(e);
-    //         throw new Error("An error occurred while measuring the download speed.");
-    //     }
-    // }
-
-    /**
-     * Measures the upload speed.
-     * @private
-     * @returns Promise
-     */
-    // private async testUploadSpeed(): Promise<number> {
-    //     const sizes = [];
-    //
-    //     try {
-    //         for (const size of this.testConfig.sizes.upload) {
-    //             for (let i = 0; i < this.testConfig.counts.upload; i++)
-    //                 sizes.push(size);
-    //         }
-    //
-    //         const requestCount = this.testConfig.uploadMax;
-    //         const requests: Request[] = [];
-    //         sizes.slice(0, requestCount).forEach((size, i) => {
-    //             const headers: IncomingHttpHeaders = {};
-    //             headers["content-length"] = size;
-    //
-    //             const data = new HTTPUploaderData(size);
-    //             data.preAllocate();
-    //
-    //             requests.push({
-    //                 url: "",//this.fastestServer.url,
-    //                 headers: headers,
-    //                 body: data.read(size),
-    //                 cacheBump: i.toString(),
-    //                 timeout: (this.options.wait) ? this.options.timeout : this.testConfig.lengths.upload,
-    //                 totalData: data.total
-    //             });
-    //         });
-    //
-    //         const maxThreads = this.testConfig.threads.upload;
-    //         const inFlight = { "threads": 0 };
-    //         const finished = [];
-    //         const start = Date.now();
-    //
-    //         for (const request of requests) {
-    //             while (inFlight.threads >= maxThreads)
-    //                 await this.delay(0.001);
-    //
-    //             const worker = new Worker(__dirname + "/../thread_workers/upload_worker.js", {
-    //                 workerData: {
-    //                     path: "./upload_worker.ts",
-    //                     request,
-    //                     wait: this.options.wait,
-    //                     startTime: start,
-    //                     timeout: this.testConfig.lengths.upload,
-    //                     urllibOptions: this.options.urllibOptions
-    //                 }
-    //             });
-    //
-    //             worker.on("message", (result) => {
-    //                 inFlight.threads--;
-    //                 finished.push(result);
-    //             });
-    //
-    //             inFlight.threads++;
-    //         }
-    //
-    //         while (finished.length < requestCount)
-    //             await this.delay(0.001);
-    //
-    //         const end = Date.now();
-    //         const bytesSent = sum(finished);
-    //         const upload = Number((((bytesSent / ((end - start) / 1000)) * 8.0) / 1000.0 / 1000.0).toFixed(2));
-    //
-    //         if (this.options.uploadUnit !== SpeedUnits.Mbps)
-    //             return convertUnits(SpeedUnits.Mbps, this.options.uploadUnit, upload);
-    //         else
-    //             return upload;
-    //     } catch {
-    //         throw new Error("An error occurred while measuring the upload speed.");
-    //     }
-    // }
 }

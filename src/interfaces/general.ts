@@ -1,6 +1,3 @@
-import { IncomingHttpHeaders } from "http";
-import { RequestOptions } from "urllib";
-
 enum DistanceUnits {
     mi = "mi",
     km = "km",
@@ -19,89 +16,23 @@ enum SpeedUnits {
 
 interface USOptions {
     /** Display debug messages. */
-    debug?: boolean,
+    debug?: boolean;
     /** Perform test against multiple servers */
     multiTest?: boolean;
-    /** Number of speedtest.net servers to discover. */
-    serversCount?: number;
-    /** Single request timeout (in seconds). */
-    timeout?: number,
     /** Measure the download speed. */
-    measureDownload?: boolean,
+    measureDownload?: boolean;
     /** Measure the upload speed. */
-    measureUpload?: boolean,
-    /** Complete test without skipping (if timeout reached). */
-    wait?: boolean,
-    /** The number of URL addresses, ie the number of tests performed. */
-    urlCount?: number,
+    measureUpload?: boolean;
     /** The resulting unit of distance to test server. */
-    distanceUnit?: DistanceUnits,
+    distanceUnit?: DistanceUnits;
     /** The resulting unit of download speed. */
-    downloadUnit?: SpeedUnits,
+    downloadUnit?: SpeedUnits;
     /** The resulting unit of upload speed. */
-    uploadUnit?: SpeedUnits
-    /** Payload used by Cloudflare test (download). */
-    downloadPayload?: number[][]
-    /** Payload used by Cloudflare test (upload). */
-    uploadPayload?: number[][],
-    /** Custom request options to urllib. */
-    urllibOptions?: RequestOptions
-}
-
-interface Request {
-    /**
-     * Request url.
-     */
-    url: string;
-    /**
-     * Request headers.
-     */
-    headers: IncomingHttpHeaders;
-    /**
-     * Request body.
-     */
-    body: string;
-    /**
-     * Request cache override.
-     */
-    cacheBump: string;
-    /**
-     * Request timeout.
-     */
-    timeout: number;
-    /**
-     * Request total data.
-     */
-    totalData: number[];
-}
-
-interface WorkerData {
-    /**
-     * Worker request.
-     */
-    request: Request;
-    /**
-     * Wait for test completion.
-     */
-    wait: boolean;
-    /**
-     * Worker start time.
-     */
-    startTime: number;
-    /**
-     * Request timeout.
-     */
-    timeout: number;
-    /**
-     * Urllib options.
-     */
-    urllibOptions: RequestOptions;
+    uploadUnit?: SpeedUnits;
 }
 
 export {
     DistanceUnits,
     SpeedUnits,
-    USOptions,
-    Request,
-    WorkerData
+    USOptions
 };
