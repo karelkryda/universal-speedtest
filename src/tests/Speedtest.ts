@@ -78,22 +78,10 @@ export class Speedtest {
             console.debug(`Your latency is ${ latency } ms and jitter is ${ jitter } ms`);
         }
 
-        // TODO: this can be used to measure latency during download/upload test
-        // console.log("test start");
-        // const socketClient2 = this.createSocketClient(bestServer.host);
-        // this.getLatencyAndJitter(socketClient2, -1).then((result) => {
-        //     console.log("latency: " + result.latency);
-        //     console.log("jitter: " + result.jitter);
-        // });
-        // this.delay(2000).then(() => {
-        //     console.log("test done");
-        //     socketClient2.close();
-        // });
-
         // Test download speed
         let downloadResult: STDownloadResult;
         if (this.options.measureDownload) {
-            downloadResult = await this.measureDownloadSpeed(bestServers, testUUID);
+            downloadResult = await this.measureDownloadSpeed(bestServers, bestServer, testUUID);
             if (this.options.debug) {
                 console.debug(`Download speed is ${ downloadResult.speed } ${ this.options.downloadUnit }`);
             }
@@ -302,11 +290,12 @@ export class Speedtest {
     /**
      * Performs download speed measurement and returns the result.
      * @param {STMeasurementServer[]} servers - All available measurement servers
+     * @param {STMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
      * @private
      * @returns {STDownloadResult} Download speed measurement result
      */
-    private async measureDownloadSpeed(servers: STMeasurementServer[], testUUID: string): Promise<STDownloadResult> {
+    private async measureDownloadSpeed(servers: STMeasurementServer[], bestServer: STMeasurementServer, testUUID: string): Promise<STDownloadResult> {
         let sampleBytes = 0;
 
         // Handler for interrupting active connections
@@ -320,6 +309,10 @@ export class Speedtest {
 
         // Handler for opening new connections
         const openServerConnection = (server: STMeasurementServer) => {
+            if (activeConnections >= 24) {
+                return;
+            }
+
             increaseConnections();
             fetch(`https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`, { signal: abortSignal }).then(response => {
                 if (response.ok) {
@@ -353,7 +346,11 @@ export class Speedtest {
             // Open initial connection to all available servers
             servers.forEach(openServerConnection);
 
-            const checkInterval = setInterval(() => {
+            // Start load latency test
+            const socketClient = this.createSocketClient(bestServer.host);
+            const latencyTest = this.getLatencyAndJitter(socketClient, testUUID, -1, 15, true);
+
+            const checkInterval = setInterval(async () => {
                 const now = Date.now();
                 const elapsedSampleTime = now - lastSampleTime;
                 const bandwidthInBytes = (sampleBytes / (elapsedSampleTime / 1_000));
@@ -381,15 +378,17 @@ export class Speedtest {
                     clearInterval(checkInterval);
 
                     // Abort all active connections
+                    socketClient.close();
                     abortController.abort();
 
                     // Calculate final download speed
+                    const { latency, jitter } = await latencyTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
                     const convertedSpeed = convertUnits(SpeedUnits.Bps, this.options.downloadUnit, finalSpeed);
                     resolve({
                         transferredBytes: transferredBytes,
-                        // TODO: implement latency test
-                        latency: 0,
+                        latency: latency,
+                        jitter: jitter,
                         speed: Number(convertedSpeed.toFixed(2))
                     });
                 }

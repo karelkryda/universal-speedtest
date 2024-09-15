@@ -174,6 +174,25 @@ interface STMeasurementServer {
     jitter: number;
 }
 
+interface STResultClient {
+    /** Client IP address. */
+    ip: string;
+    /**
+     * Client latitude.
+     */
+    lat: number;
+    /**
+     * Client longitude.
+     */
+    lon: number;
+    /** Client ISP. */
+    isp: string;
+    /**
+     * Client ISP rating.
+     */
+    ispRating: number;
+}
+
 interface STLatencyJitter {
     latency: number;
     jitter: number;
@@ -182,6 +201,7 @@ interface STLatencyJitter {
 interface STDownloadResult {
     transferredBytes: number;
     latency: number;
+    jitter: number;
     speed: number;
 }
 
@@ -200,27 +220,8 @@ interface STResult {
     servers: STMeasurementServer[];
     /** The best server information. */
     bestServer: STMeasurementServer;
-    /** The time the test lasted in seconds. */
+    /** Time the test lasted in seconds. */
     totalTime: number;
-}
-
-interface STResultClient {
-    /** Client IP address. */
-    ip: string;
-    /**
-     * Client latitude.
-     */
-    lat: number;
-    /**
-     * Client longitude.
-     */
-    lon: number;
-    /** Client ISP. */
-    isp: string;
-    /**
-     * Client ISP rating.
-     */
-    ispRating: number;
 }
 
 interface STResultServer {

@@ -1,6 +1,6 @@
 import { IncomingHttpHeaders } from "http";
 import { HttpClientResponse } from "urllib";
-import { CFMeasurementServer, CFTestConfig, CloudflareResult, USOptions, SpeedUnits } from "../interfaces/index.js";
+import { CFMeasurementServer, CFTestConfig, CloudflareResult, SpeedUnits, USOptions } from "../interfaces/index.js";
 import { avg, convertUnits, createRequest, getDistance, getQuartile, jitter } from "../utils/index.js";
 
 export class Cloudflare {
