@@ -31,13 +31,13 @@ export function createRequest(url: string, headers: IncomingHttpHeaders, body: s
 /**
  * Parses XML string to JSON object.
  * @param xml - XML string to be parsed
- * @param callback - callback to which the JSON object will be returned
  */
-export function parseXML(xml: string, callback: (response: any) => void): void {
+export function parseXML(xml: string): Promise<any> {
     if (XMLValidator.validate(xml) === true)
-        parseString(xml, (_, result) => {
-            return callback(result);
-        });
+        return new Promise(resolve => parseString(xml, {
+            explicitArray: false,
+            mergeAttrs: true
+        }, (_, result) => resolve(result)));
     else
         throw new Error("Error parsing xml");
 }

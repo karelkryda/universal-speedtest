@@ -1,18 +1,21 @@
-import { CloudflareResult, Options, SpeedtestResult, SpeedUnits } from "./interfaces/index.js";
+import { CloudflareResult, DistanceUnits, SpeedUnits, STResult, USOptions } from "./interfaces/index.js";
 import { convertUnits } from "./utils/index.js";
 import { Cloudflare, Speedtest } from "./tests/index.js";
 
 export class UniversalSpeedTest {
-    private readonly options: Options;
+    private readonly options: USOptions;
 
-    constructor(options?: Options) {
+    constructor(options?: USOptions) {
         this.options = {
             debug: false,
+            multiTest: true,
+            serversCount: 10,
             timeout: 60,
             measureDownload: true,
             measureUpload: false,
             wait: true,
             urlCount: 5,
+            distanceUnit: DistanceUnits.mi,
             downloadUnit: SpeedUnits.Mbps,
             uploadUnit: SpeedUnits.Mbps,
             downloadPayload: [
@@ -35,7 +38,7 @@ export class UniversalSpeedTest {
      * Performs measurements using speedtest.net
      * @returns Promise
      */
-    public runSpeedtestTest(): Promise<SpeedtestResult> {
+    public runSpeedtestTest(): Promise<STResult> {
         const speedTest = new Speedtest(this.options);
         return speedTest.run();
     }
@@ -51,6 +54,7 @@ export class UniversalSpeedTest {
 }
 
 export {
+    DistanceUnits,
     SpeedUnits,
     convertUnits
 };

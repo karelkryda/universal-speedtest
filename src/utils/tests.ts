@@ -74,11 +74,24 @@ export function getQuartile(tests: number[], percentile: number): number {
 
 /**
  * Returns the sum of all the elements in an array.
- * @param arr - The array to be summed
+ * @param values - The array to be summed
  * @returns number
  */
-export function sum(arr: number[]): number {
-    return arr.reduce((a, b) => a + b, 0);
+export function sum(values: number[]): number {
+    return values.reduce((accumulator, value) => accumulator + value, 0);
+}
+
+/**
+ * Converts miles to kilometers.
+ * @param distance Current distance in miles
+ * @returns number - new distance
+ */
+export function convertMilesToKilometers(distance: number): number {
+    try {
+        return Number(convert(distance, "mi").to("km").toFixed(2));
+    } catch {
+        throw new Error("There was an error in converting the units. Did you enter the correct input units?");
+    }
 }
 
 /**
@@ -97,4 +110,17 @@ export function convertUnits(actualUnit: SpeedUnits, newUnit: SpeedUnits, speed:
     } catch {
         throw new Error("There was an error in converting the units. Did you enter the correct input units?");
     }
+}
+
+/**
+ * Returns average value from given values.
+ * @param {number[]} values - Values to calculate average from
+ * @param {number} decimalPoints - Maximum number of decimal points
+ * @private
+ * @returns {number} The average value
+ */
+export function average(values: number[], decimalPoints: number): number {
+    const valuesSum = sum(values);
+    const averageValue = valuesSum / values.length;
+    return Number(averageValue.toFixed(decimalPoints));
 }

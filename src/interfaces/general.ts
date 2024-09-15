@@ -1,6 +1,11 @@
 import { IncomingHttpHeaders } from "http";
 import { RequestOptions } from "urllib";
 
+enum DistanceUnits {
+    mi = "mi",
+    km = "km",
+}
+
 enum SpeedUnits {
     Bps = "Bps",
     KBps = "KBps",
@@ -12,9 +17,13 @@ enum SpeedUnits {
     Gbps = "Gbps",
 }
 
-interface Options {
+interface USOptions {
     /** Display debug messages. */
     debug?: boolean,
+    /** Perform test against multiple servers */
+    multiTest?: boolean;
+    /** Number of speedtest.net servers to discover. */
+    serversCount?: number;
     /** Single request timeout (in seconds). */
     timeout?: number,
     /** Measure the download speed. */
@@ -25,6 +34,8 @@ interface Options {
     wait?: boolean,
     /** The number of URL addresses, ie the number of tests performed. */
     urlCount?: number,
+    /** The resulting unit of distance to test server. */
+    distanceUnit?: DistanceUnits,
     /** The resulting unit of download speed. */
     downloadUnit?: SpeedUnits,
     /** The resulting unit of upload speed. */
@@ -88,8 +99,9 @@ interface WorkerData {
 }
 
 export {
+    DistanceUnits,
     SpeedUnits,
-    Options,
+    USOptions,
     Request,
     WorkerData
 };

@@ -1,10 +1,10 @@
 import { IncomingHttpHeaders } from "http";
 import { HttpClientResponse } from "urllib";
-import { CFMeasurementServer, CFTestConfig, CloudflareResult, Options, SpeedUnits } from "../interfaces/index.js";
+import { CFMeasurementServer, CFTestConfig, CloudflareResult, USOptions, SpeedUnits } from "../interfaces/index.js";
 import { avg, convertUnits, createRequest, getDistance, getQuartile, jitter } from "../utils/index.js";
 
 export class Cloudflare {
-    private readonly options: Options;
+    private readonly options: USOptions;
     private readonly result: CloudflareResult = {} as CloudflareResult;
 
     private testConfig: CFTestConfig;
@@ -14,7 +14,7 @@ export class Cloudflare {
      * Constructor for Cloudflare class
      * @param options - CloudflareOptions (available options for this test)
      */
-    constructor(options: Options) {
+    constructor(options: USOptions) {
         this.options = options;
     }
 
