@@ -1,7 +1,6 @@
 import { IncomingHttpHeaders } from "http";
 import { HttpClientResponse, request, RequestOptions } from "urllib";
-import { XMLValidator } from "fast-xml-parser";
-import { parseString } from "xml2js";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
 
 /**
  * Creates an urllib request for speedtest.net
@@ -34,10 +33,16 @@ export function createRequest(url: string, headers: IncomingHttpHeaders, body: s
  */
 export function parseXML(xml: string): Promise<any> {
     if (XMLValidator.validate(xml) === true)
-        return new Promise(resolve => parseString(xml, {
-            explicitArray: false,
-            mergeAttrs: true
-        }, (_, result) => resolve(result)));
+        return new Promise(resolve => {
+            const parser = new XMLParser({
+                ignoreAttributes: false,
+                attributeNamePrefix: "",
+                parseAttributeValue: true
+            });
+            const xmlObject = parser.parse(xml);
+
+            resolve(xmlObject);
+        });
     else
         throw new Error("Error parsing xml");
 }

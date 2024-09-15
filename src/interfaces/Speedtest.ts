@@ -92,14 +92,6 @@ interface STConfigSocketLoad {
 /**
  * Test interfaces.
  */
-interface STClient {
-    ip: string;
-    lat: number;
-    lon: number;
-    isp: string;
-    ispRating: number;
-}
-
 interface STMeasurementServer {
     id: number;
     host: string;
@@ -135,7 +127,7 @@ interface STUploadResult {
 
 interface STResult {
     /** Client information. */
-    client: STClient;
+    client: STConfigClient;
     /** Network ping measurement result. */
     pingResult: STLatencyJitter;
     /** Network download measurement result. */
@@ -152,7 +144,6 @@ interface STResult {
 
 export {
     STConfig,
-    STClient,
     STMeasurementServer,
     STLatencyJitter,
     STDownloadResult,

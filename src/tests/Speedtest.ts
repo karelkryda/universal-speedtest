@@ -4,7 +4,6 @@ import { WebSocket } from "ws";
 import {
     DistanceUnits,
     SpeedUnits,
-    STClient,
     STConfig,
     STDownloadResult,
     STLatencyJitter,
@@ -40,10 +39,9 @@ export class Speedtest {
 
         // Get and parse test config
         const testConfig: STConfig = await this.getConfig();
-        const client: STClient = this.parseConfigClient(testConfig);
         if (this.options.debug) {
             console.debug("speedtest.net config was obtained");
-            console.debug(`Your ISP is '${ client.isp }' (${ client.ip })`);
+            console.debug(`Your ISP is '${ testConfig.client.isp }' (${ testConfig.client.ip })`);
         }
 
         // Get available servers and the fastest server(s)
@@ -92,7 +90,7 @@ export class Speedtest {
         }
 
         return {
-            client: client,
+            client: testConfig.client,
             pingResult: pingResult,
             downloadResult: downloadResult,
             uploadResult: uploadResult,
@@ -114,21 +112,6 @@ export class Speedtest {
         } catch {
             throw new Error("An error occurred while retrieving test configuration from speedtest.net.");
         }
-    }
-
-    /**
-     * Parses test config and converts client information to correct data types.
-     * @param testConfig - Test config
-     * @private
-     * @returns {STClient} Test client information
-     */
-    private parseConfigClient(testConfig: STConfig): STClient {
-        return {
-            ...testConfig.client,
-            lat: Number(testConfig.client.lat),
-            lon: Number(testConfig.client.lon),
-            ispRating: Number(testConfig.client.isprating)
-        };
     }
 
     /**
