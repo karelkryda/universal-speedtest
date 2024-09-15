@@ -1,3 +1,6 @@
+/**
+ * Test config interfaces.
+ */
 interface STConfig {
     client: STConfigClient;
     "server-config": STConfigServerConfig;
@@ -86,111 +89,29 @@ interface STConfigSocketLoad {
     disabled?: boolean;
 }
 
-interface STTestConfig {
-    client: STConfigClient;
-    sizes: STConfigSizes;
-    counts: STConfigCounts;
-    threads: STConfigThreads;
-    lengths: STConfigLengths;
-    uploadMax: number;
-}
-
-interface STConfigSizes {
-    upload: number[];
-    download: number[];
-}
-
-interface STConfigCounts {
-    upload: number;
-    download: number;
-}
-
-interface STConfigThreads {
-    upload: number;
-    download: number;
-}
-
-interface STConfigLengths {
-    upload: number;
-    download: number;
+/**
+ * Test interfaces.
+ */
+interface STClient {
+    ip: string;
+    lat: number;
+    lon: number;
+    isp: string;
+    ispRating: number;
 }
 
 interface STMeasurementServer {
-    /**
-     * Server url.
-     */
-    url: string;
-    /**
-     * Server latitude.
-     */
-    lat: number;
-    /**
-     * Server longitude.
-     */
-    lon: number;
-    /**
-     * Server distance (km).
-     */
-    distance: number;
-    /**
-     * Server name.
-     */
-    name: string;
-    /**
-     * Server country.
-     */
-    country: string;
-    /**
-     * Server country code.
-     */
-    cc: string;
-    /**
-     * Server sponsor.
-     */
-    sponsor: string;
-    /**
-     * Server ID.
-     */
     id: number;
-    /**
-     * Server preferred.
-     */
-    preferred: boolean;
-    /**
-     * Server HTTPS functional.
-     */
-    https_functional: boolean;
-    /**
-     * Server host URI.
-     */
     host: string;
-    /**
-     * Server latency.
-     */
-    latency: number;
-    /**
-     * Server jitter.
-     */
-    jitter: number;
-}
-
-interface STResultClient {
-    /** Client IP address. */
-    ip: string;
-    /**
-     * Client latitude.
-     */
+    name: string;
     lat: number;
-    /**
-     * Client longitude.
-     */
     lon: number;
-    /** Client ISP. */
-    isp: string;
-    /**
-     * Client ISP rating.
-     */
-    ispRating: number;
+    distance: number;
+    country: string;
+    cc: string;
+    sponsor: string;
+    latency: number;
+    jitter: number;
 }
 
 interface STLatencyJitter {
@@ -205,17 +126,22 @@ interface STDownloadResult {
     speed: number;
 }
 
+interface STUploadResult {
+    transferredBytes: number;
+    latency: number;
+    jitter: number;
+    speed: number;
+}
+
 interface STResult {
     /** Client information. */
-    client: STResultClient;
-    /** Network latency. */
-    latency: number;
-    /** Network jitter. */
-    jitter: number;
+    client: STClient;
+    /** Network ping measurement result. */
+    pingResult: STLatencyJitter;
     /** Network download measurement result. */
     downloadResult?: STDownloadResult;
     /** Network upload measurement result. */
-    // uploadResult?: STUploadResult;
+    uploadResult?: STUploadResult;
     /** Servers information. */
     servers: STMeasurementServer[];
     /** The best server information. */
@@ -224,24 +150,12 @@ interface STResult {
     totalTime: number;
 }
 
-interface STResultServer {
-    /** Server name. */
-    sponsor: string;
-    /** Server city. */
-    city: string;
-    /** Server country. */
-    country: string;
-    /** Server country code. */
-    countryCode: string;
-    /** Server distance. */
-    distance: number;
-}
-
 export {
     STConfig,
-    STTestConfig,
+    STClient,
     STMeasurementServer,
     STLatencyJitter,
     STDownloadResult,
+    STUploadResult,
     STResult
 };

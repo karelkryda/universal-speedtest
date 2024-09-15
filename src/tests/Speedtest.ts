@@ -1,36 +1,26 @@
-import { Worker } from "worker_threads";
-import { IncomingHttpHeaders } from "http";
-import { HTTPUploaderData } from "../helpers/index.js";
+import { randomUUID } from "node:crypto";
+import { clearInterval } from "node:timers";
+import { WebSocket } from "ws";
 import {
     DistanceUnits,
-    Request,
     SpeedUnits,
+    STClient,
     STConfig,
     STDownloadResult,
     STLatencyJitter,
     STMeasurementServer,
     STResult,
-    STTestConfig,
+    STUploadResult,
     USOptions
 } from "../interfaces/index.js";
-import { average, convertMilesToKilometers, convertUnits, createRequest, parseXML, sum } from "../utils/index.js";
-import { WebSocket } from "ws";
-import { randomUUID } from "node:crypto";
-import { clearInterval } from "node:timers";
+import { average, convertMilesToKilometers, convertUnits, createRequest, parseXML } from "../utils/index.js";
 
+/**
+ * Ookla Speedtest test.
+ */
 export class Speedtest {
     private readonly USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
     private readonly options: USOptions;
-    private readonly result: STResult;
-    // private openedConnections = 0;
-    // private readers = [];
-    // private abortControllers = [];
-
-    // TODO:
-    private testConfig: STTestConfig;
-    // private readonly uploadSizes = [ 32768, 65536, 131072, 262144, 524288, 1048576, 7340032 ];
-    // private servers: STMeasurementServer[];
-    // private fastestServer: STMeasurementServer;
 
     /**
      * Constructor for Ookla Speedtest.
@@ -50,12 +40,10 @@ export class Speedtest {
 
         // Get and parse test config
         const testConfig: STConfig = await this.getConfig();
-        // TODO:
-        // console.log(testConfig);
-        // await this.parseTestConfig(testConfig);
+        const client: STClient = this.parseConfigClient(testConfig);
         if (this.options.debug) {
             console.debug("speedtest.net config was obtained");
-            console.debug(`Your ISP is '${ testConfig.client.isp }' (${ testConfig.client.ip })`);
+            console.debug(`Your ISP is '${ client.isp }' (${ client.ip })`);
         }
 
         // Get available servers and the fastest server(s)
@@ -73,9 +61,9 @@ export class Speedtest {
 
         // Test latency and jitter against the fastest server
         const socketClient = this.createSocketClient(bestServer.host);
-        const { latency, jitter } = await this.getLatencyAndJitter(socketClient, testUUID, 10, 20, true);
+        const pingResult = await this.getLatencyAndJitter(socketClient, testUUID, 10, 20, true);
         if (this.options.debug) {
-            console.debug(`Your latency is ${ latency } ms and jitter is ${ jitter } ms`);
+            console.debug(`Your latency is ${ pingResult.latency } ms and jitter is ${ pingResult.jitter } ms`);
         }
 
         // Test download speed
@@ -87,16 +75,15 @@ export class Speedtest {
             }
         }
 
-        // TODO:
-        //
-        // // Test upload speed
-        // if (this.options.measureUpload) {
-        //     const uploadSpeed = await this.testUploadSpeed();
-        //     this.result.uploadSpeed = uploadSpeed;
-        //
-        //     if (this.options.debug)
-        //         console.debug(`Upload: ${ uploadSpeed } ${ this.options.uploadUnit }`);
-        // }
+        // Test upload speed
+        let uploadResult: STUploadResult;
+        if (this.options.measureUpload) {
+            // TODO:
+            // uploadResult = await this.measureUploadSpeed(bestServers, bestServer, testUUID);
+            if (this.options.debug) {
+                console.debug(`Upload speed is ${ uploadResult.speed } ${ this.options.uploadUnit }`);
+            }
+        }
 
         const testEndTime = Date.now();
         const elapsedTime = Number(((testEndTime - testStartTime) / 1000).toFixed(1));
@@ -104,24 +91,14 @@ export class Speedtest {
             console.debug(`Test was performed in ${ elapsedTime } seconds`);
         }
 
-        // TODO:
         return {
-            // client: {
-            //     ip: testConfig.settings.client.ip,
-            //     lat: Number(testConfig.settings.client.lat),
-            //     lon: Number(testConfig.settings.client.lon),
-            //     isp: testConfig.settings.client.isp,
-            //     ispRating: Number(testConfig.settings.client.isprating)
-            // },
-            client: testConfig.client,
+            client: client,
+            pingResult: pingResult,
+            downloadResult: downloadResult,
+            uploadResult: uploadResult,
             servers: bestServers,
             bestServer: bestServer,
-            latency: latency,
-            jitter: jitter,
-            downloadResult: downloadResult,
-            // uploadResult: uploadResult,
-            totalTime: elapsedTime,
-            ...this.result
+            totalTime: elapsedTime
         };
     }
 
@@ -131,21 +108,27 @@ export class Speedtest {
      * @returns {Promise<STConfig>} Configuration for the current test
      */
     private async getConfig(): Promise<STConfig> {
-        // TODO: return only client info cuz I don't need anything else?
         try {
             const { data } = await createRequest("https://www.speedtest.net/speedtest-config.php", {}, null, null, this.options.timeout, this.options.urllibOptions);
-            const config = ((await parseXML(data.toString())).settings as STConfig);
-            config.client.lat = Number(config.client.lat);
-            config.client.lon = Number(config.client.lon);
-            config.client.isprating = Number(config.client.isprating);
-            config.client.rating = Number(config.client.rating);
-            config.client.ispdlavg = Number(config.client.ispdlavg);
-            config.client.ispulavg = Number(config.client.ispulavg);
-            config.client.loggedin = Number(config.client.loggedin);
-            return config;
+            return ((await parseXML(data.toString())).settings as STConfig);
         } catch {
             throw new Error("An error occurred while retrieving test configuration from speedtest.net.");
         }
+    }
+
+    /**
+     * Parses test config and converts client information to correct data types.
+     * @param testConfig - Test config
+     * @private
+     * @returns {STClient} Test client information
+     */
+    private parseConfigClient(testConfig: STConfig): STClient {
+        return {
+            ...testConfig.client,
+            lat: Number(testConfig.client.lat),
+            lon: Number(testConfig.client.lon),
+            ispRating: Number(testConfig.client.isprating)
+        };
     }
 
     /**
@@ -163,13 +146,9 @@ export class Speedtest {
             return new Promise(resolve => {
                 servers.forEach(server => {
                     // Convert info to correct types
+                    server.id = Number(server.id);
                     server.lat = Number(server.lat);
                     server.lon = Number(server.lon);
-                    server.id = Number(server.id);
-                    // TODO:
-                    // delete server.url;
-                    // delete server.preferred;
-                    // delete server.https_functional;
                     if (distanceUnit === DistanceUnits.km) {
                         server.distance = convertMilesToKilometers(server.distance);
                     }
@@ -575,75 +554,75 @@ export class Speedtest {
      * @private
      * @returns Promise
      */
-    private async testUploadSpeed(): Promise<number> {
-        const sizes = [];
-
-        try {
-            for (const size of this.testConfig.sizes.upload) {
-                for (let i = 0; i < this.testConfig.counts.upload; i++)
-                    sizes.push(size);
-            }
-
-            const requestCount = this.testConfig.uploadMax;
-            const requests: Request[] = [];
-            sizes.slice(0, requestCount).forEach((size, i) => {
-                const headers: IncomingHttpHeaders = {};
-                headers["content-length"] = size;
-
-                const data = new HTTPUploaderData(size);
-                data.preAllocate();
-
-                requests.push({
-                    url: "",//this.fastestServer.url,
-                    headers: headers,
-                    body: data.read(size),
-                    cacheBump: i.toString(),
-                    timeout: (this.options.wait) ? this.options.timeout : this.testConfig.lengths.upload,
-                    totalData: data.total
-                });
-            });
-
-            const maxThreads = this.testConfig.threads.upload;
-            const inFlight = { "threads": 0 };
-            const finished = [];
-            const start = Date.now();
-
-            for (const request of requests) {
-                while (inFlight.threads >= maxThreads)
-                    await this.delay(0.001);
-
-                const worker = new Worker(__dirname + "/../thread_workers/upload_worker.js", {
-                    workerData: {
-                        path: "./upload_worker.ts",
-                        request,
-                        wait: this.options.wait,
-                        startTime: start,
-                        timeout: this.testConfig.lengths.upload,
-                        urllibOptions: this.options.urllibOptions
-                    }
-                });
-
-                worker.on("message", (result) => {
-                    inFlight.threads--;
-                    finished.push(result);
-                });
-
-                inFlight.threads++;
-            }
-
-            while (finished.length < requestCount)
-                await this.delay(0.001);
-
-            const end = Date.now();
-            const bytesSent = sum(finished);
-            const upload = Number((((bytesSent / ((end - start) / 1000)) * 8.0) / 1000.0 / 1000.0).toFixed(2));
-
-            if (this.options.uploadUnit !== SpeedUnits.Mbps)
-                return convertUnits(SpeedUnits.Mbps, this.options.uploadUnit, upload);
-            else
-                return upload;
-        } catch {
-            throw new Error("An error occurred while measuring the upload speed.");
-        }
-    }
+    // private async testUploadSpeed(): Promise<number> {
+    //     const sizes = [];
+    //
+    //     try {
+    //         for (const size of this.testConfig.sizes.upload) {
+    //             for (let i = 0; i < this.testConfig.counts.upload; i++)
+    //                 sizes.push(size);
+    //         }
+    //
+    //         const requestCount = this.testConfig.uploadMax;
+    //         const requests: Request[] = [];
+    //         sizes.slice(0, requestCount).forEach((size, i) => {
+    //             const headers: IncomingHttpHeaders = {};
+    //             headers["content-length"] = size;
+    //
+    //             const data = new HTTPUploaderData(size);
+    //             data.preAllocate();
+    //
+    //             requests.push({
+    //                 url: "",//this.fastestServer.url,
+    //                 headers: headers,
+    //                 body: data.read(size),
+    //                 cacheBump: i.toString(),
+    //                 timeout: (this.options.wait) ? this.options.timeout : this.testConfig.lengths.upload,
+    //                 totalData: data.total
+    //             });
+    //         });
+    //
+    //         const maxThreads = this.testConfig.threads.upload;
+    //         const inFlight = { "threads": 0 };
+    //         const finished = [];
+    //         const start = Date.now();
+    //
+    //         for (const request of requests) {
+    //             while (inFlight.threads >= maxThreads)
+    //                 await this.delay(0.001);
+    //
+    //             const worker = new Worker(__dirname + "/../thread_workers/upload_worker.js", {
+    //                 workerData: {
+    //                     path: "./upload_worker.ts",
+    //                     request,
+    //                     wait: this.options.wait,
+    //                     startTime: start,
+    //                     timeout: this.testConfig.lengths.upload,
+    //                     urllibOptions: this.options.urllibOptions
+    //                 }
+    //             });
+    //
+    //             worker.on("message", (result) => {
+    //                 inFlight.threads--;
+    //                 finished.push(result);
+    //             });
+    //
+    //             inFlight.threads++;
+    //         }
+    //
+    //         while (finished.length < requestCount)
+    //             await this.delay(0.001);
+    //
+    //         const end = Date.now();
+    //         const bytesSent = sum(finished);
+    //         const upload = Number((((bytesSent / ((end - start) / 1000)) * 8.0) / 1000.0 / 1000.0).toFixed(2));
+    //
+    //         if (this.options.uploadUnit !== SpeedUnits.Mbps)
+    //             return convertUnits(SpeedUnits.Mbps, this.options.uploadUnit, upload);
+    //         else
+    //             return upload;
+    //     } catch {
+    //         throw new Error("An error occurred while measuring the upload speed.");
+    //     }
+    // }
 }
