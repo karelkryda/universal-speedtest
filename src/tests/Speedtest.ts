@@ -15,7 +15,7 @@ import {
 import {
     average,
     convertMilesToKilometers,
-    convertUnits,
+    convertSpeedUnit,
     createRequest,
     createSocketClient,
     parseXML
@@ -37,7 +37,7 @@ export class Speedtest {
 
     /**
      * Performs the Ookla Speedtest measurement.
-     * @returns {Promise<STResult>} Results of the test
+     * @returns {Promise<STResult>} Results of the Ookla test
      */
     public async run(): Promise<STResult> {
         const testUUID = randomUUID();
@@ -130,7 +130,7 @@ export class Speedtest {
      */
     private async getServersList(distanceUnit: DistanceUnits): Promise<STMeasurementServer[]> {
         let testsInProgress = 0;
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true`;
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.serversToFetch }&https_functional=true`;
         try {
             const response = await createRequest(serversUrl);
             const body = await response.text();
@@ -340,7 +340,7 @@ export class Speedtest {
                     // Calculate final download speed
                     const { latency, jitter } = await latencyTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
-                    const convertedSpeed = convertUnits(SpeedUnits.Bps, this.options.downloadUnit, finalSpeed);
+                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.downloadUnit, finalSpeed);
                     resolve({
                         transferredBytes: transferredBytes,
                         latency: latency,

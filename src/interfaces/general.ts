@@ -17,8 +17,10 @@ enum SpeedUnits {
 interface USOptions {
     /** Display debug messages. */
     debug?: boolean;
-    /** Perform test against multiple servers */
+    /** Perform Ookla test against multiple servers. */
     multiTest?: boolean;
+    /** Number of Ookla test servers to fetch. */
+    serversToFetch?: number;
     /** Measure the download speed. */
     measureDownload?: boolean;
     /** Measure the upload speed. */

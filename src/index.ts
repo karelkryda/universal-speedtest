@@ -1,14 +1,22 @@
 import { DistanceUnits, SpeedUnits, STResult, USOptions } from "./interfaces/index.js";
-import { convertUnits } from "./utils/index.js";
+import { convertSpeedUnit } from "./utils/index.js";
 import { Speedtest } from "./tests/index.js";
 
+/**
+ * UniversalSpeedTest.
+ */
 export class UniversalSpeedTest {
     private readonly options: USOptions;
 
+    /**
+     * Constructor for UniversalSpeedTest.
+     * @param options - UniversalSpeedTest options object
+     */
     constructor(options?: USOptions) {
         this.options = {
             debug: false,
             multiTest: true,
+            serversToFetch: 10,
             measureDownload: true,
             measureUpload: false,
             distanceUnit: DistanceUnits.mi,
@@ -20,7 +28,7 @@ export class UniversalSpeedTest {
 
     /**
      * Performs measurements using speedtest.net
-     * @returns Promise
+     * @returns {Promise<STResult>} Ookla Speedtest test result.
      */
     public performTest(): Promise<STResult> {
         const speedTest = new Speedtest(this.options);
@@ -31,5 +39,5 @@ export class UniversalSpeedTest {
 export {
     DistanceUnits,
     SpeedUnits,
-    convertUnits
+    convertSpeedUnit
 };

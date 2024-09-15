@@ -4,7 +4,7 @@ import { SpeedUnits } from "../interfaces/index.js";
 /**
  * Returns the sum of all the elements in an array.
  * @param values - The array to be summed
- * @returns number
+ * @returns {number} Sum of all values in array
  */
 function sum(values: number[]): number {
     return values.reduce((accumulator, value) => accumulator + value, 0);
@@ -26,7 +26,7 @@ export function average(values: number[], decimalPoints: number): number {
 /**
  * Converts miles to kilometers.
  * @param distance Current distance in miles
- * @returns number - new distance
+ * @returns {number} Distance in kilometers
  */
 export function convertMilesToKilometers(distance: number): number {
     try {
@@ -37,13 +37,13 @@ export function convertMilesToKilometers(distance: number): number {
 }
 
 /**
- * Converts a unit to another unit.
+ * Converts speed to another unit.
  * @param actualUnit The unit returned by the speed test
  * @param newUnit The new unit to which you want to convert speed
  * @param speed Current network speed
- * @returns number - new speed
+ * @returns {number} Speed in requested unit
  */
-export function convertUnits(actualUnit: SpeedUnits, newUnit: SpeedUnits, speed: number): number {
+export function convertSpeedUnit(actualUnit: SpeedUnits, newUnit: SpeedUnits, speed: number): number {
     try {
         const actualUnitData: Data = actualUnit.slice(0, -2) as Data;
         const newUnitData: Data = newUnit.slice(0, -2) as Data;
