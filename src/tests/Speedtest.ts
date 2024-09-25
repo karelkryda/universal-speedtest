@@ -16,10 +16,12 @@ import {
     average,
     convertMilesToKilometers,
     convertSpeedUnit,
-    createRequest,
+    createGetRequest,
+    createPostRequest,
     createSocketClient,
     parseXML
 } from "../utils/index.js";
+import { ReadableStreamController } from "node:stream/web";
 
 /**
  * Ookla Speedtest test.
@@ -82,8 +84,7 @@ export class Speedtest {
         // Test upload speed
         let uploadResult: STUploadResult;
         if (this.options.measureUpload) {
-            // TODO:
-            // uploadResult = await this.measureUploadSpeed(bestServers, bestServer, testUUID);
+            uploadResult = await this.measureUploadSpeed(bestServer, testUUID);
             if (this.options.debug) {
                 console.debug(`Upload speed is ${ uploadResult.speed } ${ this.options.uploadUnit }`);
             }
@@ -113,7 +114,7 @@ export class Speedtest {
      */
     private async getConfig(): Promise<STConfig> {
         try {
-            const response = await createRequest("https://www.speedtest.net/speedtest-config.php");
+            const response = await createGetRequest("https://www.speedtest.net/speedtest-config.php");
             const body = await response.text();
 
             return ((await parseXML(body)).settings as STConfig);
@@ -132,7 +133,7 @@ export class Speedtest {
         let testsInProgress = 0;
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.serversToFetch }&https_functional=true`;
         try {
-            const response = await createRequest(serversUrl);
+            const response = await createGetRequest(serversUrl);
             const body = await response.text();
 
             const servers: STMeasurementServer[] = JSON.parse(body);
@@ -248,7 +249,7 @@ export class Speedtest {
      * @param {STMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
      * @private
-     * @returns {STDownloadResult} Download speed measurement result
+     * @returns {Promise<STDownloadResult>} Download speed measurement result
      */
     private async measureDownloadSpeed(servers: STMeasurementServer[], bestServer: STMeasurementServer, testUUID: string): Promise<STDownloadResult> {
         let sampleBytes = 0;
@@ -270,7 +271,7 @@ export class Speedtest {
 
             increaseConnections();
             const downloadUrl = `https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`;
-            createRequest(downloadUrl, abortSignal).then(response => {
+            createGetRequest(downloadUrl, abortSignal).then(response => {
                 if (response.ok) {
                     // Handler for capturing downloaded bytes
                     const readChunk = ({ done, value }) => {
@@ -308,12 +309,13 @@ export class Speedtest {
 
             const checkInterval = setInterval(async () => {
                 const now = Date.now();
+                const sampleBytesNow = sampleBytes;
                 const elapsedSampleTime = now - lastSampleTime;
-                const bandwidthInBytes = (sampleBytes / (elapsedSampleTime / 1_000));
+                const bandwidthInBytes = (sampleBytesNow / (elapsedSampleTime / 1_000));
 
                 // Save current bandwidth
-                transferredBytes += sampleBytes;
-                sampleBytes = 0;
+                transferredBytes += sampleBytesNow;
+                sampleBytes -= sampleBytesNow;
                 lastSampleTime = now;
                 bandwidthSamples.push(bandwidthInBytes);
 
@@ -324,7 +326,7 @@ export class Speedtest {
                     // Check whether additional connections should be opened
                     const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
                     const additionalConnections = recommendedConnections - activeConnections;
-                    for (let i = 0; i < additionalConnections; i++) {
+                    for (let connections = 0; connections < additionalConnections; connections++) {
                         // TODO: implement round-robin
                         const serverIndex = Math.floor(Math.random() * 4);
                         const server = servers.at(serverIndex);
@@ -341,6 +343,176 @@ export class Speedtest {
                     const { latency, jitter } = await latencyTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
                     const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.downloadUnit, finalSpeed);
+                    resolve({
+                        transferredBytes: transferredBytes,
+                        latency: latency,
+                        jitter: jitter,
+                        speed: Number(convertedSpeed.toFixed(2))
+                    });
+                }
+            }, 750);
+        });
+    }
+
+    /**
+     * Returns data stream for upload test.
+     * @param chunkSize - size of each stream chunk
+     * @param controllerCreated - callback to return newly created stream controller
+     * @private
+     * @returns {ReadableStream} Continuous data stream
+     */
+    private createStream(chunkSize: number, controllerCreated: (controller: ReadableStreamController<any>) => void): ReadableStream {
+        const generateChunk = (size: number): Uint8Array => {
+            const chunk = new Uint8Array(size);
+            for (let i = 0; i < size; i++) {
+                chunk[i] = Math.floor(Math.random() * 256);
+            }
+
+            return chunk;
+        };
+
+        return new ReadableStream({
+            start(controller) {
+                controllerCreated(controller);
+            },
+
+            pull(controller) {
+                const chunk = generateChunk(chunkSize);
+                controller.enqueue(chunk);
+            }
+        });
+    }
+
+    /**
+     * Reads upload test statistics and continuously reports number of transferred bytes.
+     * @param {WebSocket} ws - WebSocket connection
+     * @param {string} uuid - Test UUID
+     * @param {number} timeout - Maximum time that can be elapsed
+     * @param {function} bytesReceived - callback returning number bytes received by test server
+     * @private
+     * @returns {Promise<void>} Resolved when upload stats listener is ready
+     */
+    private startUploadStatsListener(ws: WebSocket, uuid: string, timeout: number, bytesReceived: (deliveredBytes: number) => void): Promise<void> {
+        let previousTotalBytesReceived = 0;
+        let autoClose: NodeJS.Timeout;
+        return new Promise((resolve, reject) => {
+            ws.on("error", (error) => reject(error));
+
+            ws.on("open", () => {
+                ws.send(`HI ${ uuid }`);
+                ws.send("UPLOAD_STATS 15000 50 0");
+                autoClose = setTimeout(() => ws.close, timeout * 1000);
+            });
+
+            ws.on("message", (data) => {
+                const message = data.toString();
+                if (message.startsWith("{")) {
+                    const jsonData = JSON.parse(message);
+                    const totalBytesReceived = jsonData["b"];
+                    if (!totalBytesReceived) {
+                        // Upload stats listener has been initiated and test can start
+                        resolve();
+                    } else if (totalBytesReceived) {
+                        const bytesReceivedNow = totalBytesReceived - previousTotalBytesReceived;
+                        bytesReceived(bytesReceivedNow);
+
+                        previousTotalBytesReceived = totalBytesReceived;
+                    }
+                }
+            });
+
+            ws.on("close", () => clearTimeout(autoClose));
+        });
+    }
+
+    /**
+     * Performs upload speed measurement and returns the result.
+     * @param {STMeasurementServer} bestServer - The best measurement server
+     * @param {string} testUUID - Generated UUID for this test
+     * @private
+     * @returns {Promise<STUploadResult>} Upload speed measurement result
+     */
+    private async measureUploadSpeed(bestServer: STMeasurementServer, testUUID: string): Promise<STUploadResult> {
+        let sampleBytes = 0;
+
+        // Handler for interrupting active connections
+        const abortController = new AbortController();
+        const abortSignal = abortController.signal;
+        const streamControllers: ReadableStreamController<any>[] = [];
+
+        // Handler for current number of active connections
+        let activeConnections = 0;
+        const increaseConnections = () => activeConnections++;
+        const decreaseConnections = () => activeConnections--;
+
+        // Handler for opening new connections
+        const openServerConnection = () => {
+            if (activeConnections >= 6) {
+                return;
+            }
+
+            const dataStream = this.createStream(1_024, (controller) => streamControllers.push(controller));
+            increaseConnections();
+            const uploadUrl = `https://${ bestServer.host }/upload?nocache=${ Math.random() }&guid=${ testUUID }`;
+            createPostRequest(uploadUrl, dataStream, abortSignal).catch(decreaseConnections);
+        };
+
+        // Perform upload speed measurement
+        return new Promise(async (resolve) => {
+            const now = Date.now();
+            const startTime = now;
+            const bandwidthSamples: number[] = [];
+            let lastSampleTime = now;
+            let transferredBytes = 0;
+
+            // Start upload stats gathering
+            const statsSocketClient = createSocketClient(bestServer.host);
+            await this.startUploadStatsListener(statsSocketClient, testUUID, 20, (deliveredBytes) => sampleBytes += deliveredBytes);
+
+            // Open initial connections to the best server
+            for (let connections = 0; connections < 4; connections++) {
+                openServerConnection();
+            }
+
+            // Start load latency test
+            const latencySocketClient = createSocketClient(bestServer.host);
+            const latencyTest = this.getLatencyAndJitter(latencySocketClient, testUUID, -1, 15, true);
+
+            const checkInterval = setInterval(async () => {
+                const now = Date.now();
+                const sampleBytesNow = sampleBytes;
+                const elapsedSampleTime = now - lastSampleTime;
+                const bandwidthInBytes = (sampleBytesNow / (elapsedSampleTime / 1_000));
+
+                // Save current bandwidth
+                transferredBytes += sampleBytesNow;
+                sampleBytes -= sampleBytesNow;
+                lastSampleTime = now;
+                bandwidthSamples.push(bandwidthInBytes);
+
+                // Calculate current progress in percents
+                const elapsedTotalTime = now - startTime;
+                const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                if (progressPercentage < 50) {
+                    // Check whether additional connections should be opened
+                    const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
+                    const additionalConnections = recommendedConnections - activeConnections;
+                    for (let connections = 0; connections < additionalConnections; connections++) {
+                        openServerConnection();
+                    }
+                } else if (progressPercentage === 100) {
+                    clearInterval(checkInterval);
+
+                    // Abort all active connections
+                    latencySocketClient.close();
+                    streamControllers.forEach(streamController => streamController.close());
+                    abortController.abort();
+                    statsSocketClient.close();
+
+                    // Calculate final upload speed
+                    const { latency, jitter } = await latencyTest;
+                    const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
+                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.uploadUnit, finalSpeed);
                     resolve({
                         transferredBytes: transferredBytes,
                         latency: latency,

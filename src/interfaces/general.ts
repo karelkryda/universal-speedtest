@@ -1,3 +1,8 @@
+enum Methods {
+    GET = "GET",
+    POST = "POST"
+}
+
 enum DistanceUnits {
     mi = "mi",
     km = "km",
@@ -34,6 +39,7 @@ interface USOptions {
 }
 
 export {
+    Methods,
     DistanceUnits,
     SpeedUnits,
     USOptions

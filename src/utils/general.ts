@@ -1,19 +1,41 @@
 import { WebSocket } from "ws";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
+import { Methods } from "../interfaces/index.js";
 
 const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
 
 /**
- * Creates a fetch request.
+ * Creates a fetch GET request.
  * @param url - URL address
  * @param abortSignal - request abort signal
  * @returns {Promise<Response>} fetch request
  */
-export function createRequest(url: string, abortSignal?: AbortSignal): Promise<Response> {
+export function createGetRequest(url: string, abortSignal?: AbortSignal): Promise<Response> {
+    return fetch(url, {
+        headers: {
+            "User-Agent": USER_AGENT
+        },
+        method: Methods.GET,
+        signal: abortSignal
+    });
+}
+
+/**
+ * Creates a fetch POST request.
+ * @param url - URL address
+ * @param body - request POST body
+ * @param abortSignal - request abort signal
+ * @returns {Promise<Response>} fetch request
+ */
+export function createPostRequest(url: string, body: any, abortSignal?: AbortSignal): Promise<Response> {
     return fetch(url, {
         headers: {
             "User-Agent": USER_AGENT,
+            "Content-Type": "application/octet-stream",
         },
+        method: Methods.POST,
+        body: body,
+        duplex: "half",
         signal: abortSignal
     });
 }
