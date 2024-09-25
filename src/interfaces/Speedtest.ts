@@ -116,6 +116,7 @@ interface STDownloadResult {
     latency: number;
     jitter: number;
     speed: number;
+    totalTime: number;
 }
 
 interface STUploadResult {
@@ -123,6 +124,7 @@ interface STUploadResult {
     latency: number;
     jitter: number;
     speed: number;
+    totalTime: number;
 }
 
 interface STResult {

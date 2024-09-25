@@ -347,7 +347,8 @@ export class Speedtest {
                         transferredBytes: transferredBytes,
                         latency: latency,
                         jitter: jitter,
-                        speed: Number(convertedSpeed.toFixed(2))
+                        speed: Number(convertedSpeed.toFixed(2)),
+                        totalTime: elapsedTotalTime
                     });
                 }
             }, 750);
@@ -517,7 +518,8 @@ export class Speedtest {
                         transferredBytes: transferredBytes,
                         latency: latency,
                         jitter: jitter,
-                        speed: Number(convertedSpeed.toFixed(2))
+                        speed: Number(convertedSpeed.toFixed(2)),
+                        totalTime: elapsedTotalTime
                     });
                 }
             }, 750);
