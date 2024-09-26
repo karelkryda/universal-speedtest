@@ -104,6 +104,7 @@ interface STMeasurementServer {
     sponsor: string;
     latency: number;
     jitter: number;
+    activeConnections: number;
 }
 
 interface STLatencyJitter {

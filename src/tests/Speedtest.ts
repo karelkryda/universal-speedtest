@@ -143,6 +143,7 @@ export class Speedtest {
                     server.id = Number(server.id);
                     server.lat = Number(server.lat);
                     server.lon = Number(server.lon);
+                    server.activeConnections = 0;
                     if (distanceUnit === DistanceUnits.km) {
                         server.distance = convertMilesToKilometers(server.distance);
                     }
@@ -260,8 +261,14 @@ export class Speedtest {
 
         // Handler for current number of active connections
         let activeConnections = 0;
-        const increaseConnections = () => activeConnections++;
-        const decreaseConnections = () => activeConnections--;
+        const increaseConnections = (server: STMeasurementServer) => {
+            activeConnections++;
+            server.activeConnections++;
+        };
+        const decreaseConnections = (server: STMeasurementServer) => {
+            activeConnections--;
+            server.activeConnections--;
+        };
 
         // Handler for opening new connections
         const openServerConnection = (server: STMeasurementServer) => {
@@ -269,7 +276,7 @@ export class Speedtest {
                 return;
             }
 
-            increaseConnections();
+            increaseConnections(server);
             const downloadUrl = `https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`;
             createGetRequest(downloadUrl, abortSignal).then(response => {
                 if (response.ok) {
@@ -277,19 +284,19 @@ export class Speedtest {
                     const readChunk = ({ done, value }) => {
                         if (!done) {
                             sampleBytes += value.length;
-                            reader.read().then(readChunk).catch(decreaseConnections);
+                            reader.read().then(readChunk).catch(() => decreaseConnections(server));
                         } else {
-                            decreaseConnections();
+                            decreaseConnections(server);
                         }
                     };
 
                     // Handle first chunk
                     const reader = response.body.getReader();
-                    reader.read().then(readChunk).catch(decreaseConnections);
+                    reader.read().then(readChunk).catch(() => decreaseConnections(server));
                 } else {
-                    decreaseConnections();
+                    decreaseConnections(server);
                 }
-            }).catch(decreaseConnections);
+            }).catch(() => decreaseConnections(server));
         };
 
         // Perform download speed measurement
@@ -327,9 +334,10 @@ export class Speedtest {
                     const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
-                        // TODO: implement round-robin
-                        const serverIndex = Math.floor(Math.random() * 4);
-                        const server = servers.at(serverIndex);
+                        const server = servers
+                            .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
+                            .at(0);
+
                         openServerConnection(server);
                     }
                 } else if (progressPercentage === 100) {
