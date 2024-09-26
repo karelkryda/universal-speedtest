@@ -15,13 +15,19 @@ export class UniversalSpeedTest {
     constructor(options?: USOptions) {
         this.options = {
             debug: false,
-            multiTest: true,
-            serversToFetch: 10,
-            measureDownload: true,
-            measureUpload: false,
-            distanceUnit: DistanceUnits.mi,
-            downloadUnit: SpeedUnits.Mbps,
-            uploadUnit: SpeedUnits.Mbps,
+            tests: {
+                measureDownload: true,
+                measureUpload: false,
+            },
+            units: {
+                distanceUnit: DistanceUnits.mi,
+                downloadUnit: SpeedUnits.Mbps,
+                uploadUnit: SpeedUnits.Mbps,
+            },
+            ooklaOptions: {
+                multiTest: true,
+                serversToFetch: 10,
+            },
             ...options
         };
     }
@@ -30,7 +36,7 @@ export class UniversalSpeedTest {
      * Performs measurements using speedtest.net
      * @returns {Promise<STResult>} Ookla Speedtest test result.
      */
-    public performTest(): Promise<STResult> {
+    public performOoklaTest(): Promise<STResult> {
         const speedTest = new Speedtest(this.options);
         return speedTest.run();
     }

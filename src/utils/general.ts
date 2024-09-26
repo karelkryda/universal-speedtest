@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
-import { Methods } from "../interfaces/index.js";
+import { HttpMethods } from "../interfaces/index.js";
 
 const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/APP_VERSION";
 
@@ -15,7 +15,7 @@ export function createGetRequest(url: string, abortSignal?: AbortSignal): Promis
         headers: {
             "User-Agent": USER_AGENT
         },
-        method: Methods.GET,
+        method: HttpMethods.GET,
         signal: abortSignal
     });
 }
@@ -33,7 +33,7 @@ export function createPostRequest(url: string, body: any, abortSignal?: AbortSig
             "User-Agent": USER_AGENT,
             "Content-Type": "application/octet-stream",
         },
-        method: Methods.POST,
+        method: HttpMethods.POST,
         body: body,
         duplex: "half",
         signal: abortSignal

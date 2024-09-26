@@ -1,3 +1,10 @@
+export interface OoklaOptions {
+    /** Perform Ookla test against multiple servers. */
+    multiTest?: true;
+    /** Number of Ookla test servers to fetch. */
+    serversToFetch?: number;
+}
+
 /**
  * Test config interfaces.
  */

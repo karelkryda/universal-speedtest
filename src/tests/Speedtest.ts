@@ -53,15 +53,15 @@ export class Speedtest {
         }
 
         // Get available servers and the fastest server(s)
-        const servers: STMeasurementServer[] = await this.getServersList(this.options.distanceUnit);
+        const servers: STMeasurementServer[] = await this.getServersList(this.options.units.distanceUnit);
         const bestServers: STMeasurementServer[] = await this.getBestServers(servers);
         const bestServer: STMeasurementServer = bestServers.at(0);
         if (this.options.debug) {
-            if (this.options.multiTest) {
+            if (this.options.ooklaOptions.multiTest) {
                 console.debug("Selected servers are:");
-                bestServers.forEach(server => console.debug(`  - ${ server.sponsor } (${ server.distance } ${ this.options.distanceUnit }, ${ server.latency } ms)`));
+                bestServers.forEach(server => console.debug(`  - ${ server.sponsor } (${ server.distance } ${ this.options.units.distanceUnit }, ${ server.latency } ms)`));
             } else {
-                console.debug(`Selected server is '${ bestServer.sponsor }' (${ bestServer.distance } ${ this.options.distanceUnit }, ${ bestServer.latency } ms)`);
+                console.debug(`Selected server is '${ bestServer.sponsor }' (${ bestServer.distance } ${ this.options.units.distanceUnit }, ${ bestServer.latency } ms)`);
             }
         }
 
@@ -74,19 +74,19 @@ export class Speedtest {
 
         // Test download speed
         let downloadResult: STDownloadResult;
-        if (this.options.measureDownload) {
+        if (this.options.tests.measureDownload) {
             downloadResult = await this.measureDownloadSpeed(bestServers, bestServer, testUUID);
             if (this.options.debug) {
-                console.debug(`Download speed is ${ downloadResult.speed } ${ this.options.downloadUnit }`);
+                console.debug(`Download speed is ${ downloadResult.speed } ${ this.options.units.downloadUnit }`);
             }
         }
 
         // Test upload speed
         let uploadResult: STUploadResult;
-        if (this.options.measureUpload) {
+        if (this.options.tests.measureUpload) {
             uploadResult = await this.measureUploadSpeed(bestServer, testUUID);
             if (this.options.debug) {
-                console.debug(`Upload speed is ${ uploadResult.speed } ${ this.options.uploadUnit }`);
+                console.debug(`Upload speed is ${ uploadResult.speed } ${ this.options.units.uploadUnit }`);
             }
         }
 
@@ -131,7 +131,7 @@ export class Speedtest {
      */
     private async getServersList(distanceUnit: DistanceUnits): Promise<STMeasurementServer[]> {
         let testsInProgress = 0;
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.serversToFetch }&https_functional=true`;
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.ooklaOptions.serversToFetch }&https_functional=true`;
         try {
             const response = await createGetRequest(serversUrl);
             const body = await response.text();
@@ -350,7 +350,7 @@ export class Speedtest {
                     // Calculate final download speed
                     const { latency, jitter } = await latencyTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
-                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.downloadUnit, finalSpeed);
+                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.downloadUnit, finalSpeed);
                     resolve({
                         transferredBytes: transferredBytes,
                         latency: latency,
@@ -521,7 +521,7 @@ export class Speedtest {
                     // Calculate final upload speed
                     const { latency, jitter } = await latencyTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
-                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.uploadUnit, finalSpeed);
+                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.uploadUnit, finalSpeed);
                     resolve({
                         transferredBytes: transferredBytes,
                         latency: latency,
