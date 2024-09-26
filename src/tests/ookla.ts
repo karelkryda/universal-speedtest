@@ -3,13 +3,13 @@ import { clearInterval } from "node:timers";
 import { WebSocket } from "ws";
 import {
     DistanceUnits,
+    OAConfig,
+    OADownloadResult,
+    OAMeasurementServer,
+    OAPingResult,
+    OAResult,
+    OAUploadResult,
     SpeedUnits,
-    STConfig,
-    STDownloadResult,
-    STLatencyJitter,
-    STMeasurementServer,
-    STResult,
-    STUploadResult,
     USOptions
 } from "../interfaces/index.js";
 import {
@@ -39,23 +39,23 @@ export class Ookla {
 
     /**
      * Performs the Ookla Speedtest measurement.
-     * @returns {Promise<STResult>} Results of the Ookla test
+     * @returns {Promise<OAResult>} Results of the Ookla test
      */
-    public async run(): Promise<STResult> {
+    public async run(): Promise<OAResult> {
         const testUUID = randomUUID();
         const testStartTime = Date.now();
 
         // Get and parse test config
-        const testConfig: STConfig = await this.getConfig();
+        const testConfig: OAConfig = await this.getConfig();
         if (this.options.debug) {
             console.debug("speedtest.net config was obtained");
             console.debug(`Your ISP is '${ testConfig.client.isp }' (${ testConfig.client.ip })`);
         }
 
         // Get available servers and the fastest server(s)
-        const servers: STMeasurementServer[] = await this.getServersList(this.options.units.distanceUnit);
-        const bestServers: STMeasurementServer[] = await this.getBestServers(servers);
-        const bestServer: STMeasurementServer = bestServers.at(0);
+        const servers: OAMeasurementServer[] = await this.getServersList(this.options.units.distanceUnit);
+        const bestServers: OAMeasurementServer[] = await this.getBestServers(servers);
+        const bestServer: OAMeasurementServer = bestServers.at(0);
         if (this.options.debug) {
             if (this.options.ooklaOptions.multiTest) {
                 console.debug("Selected servers are:");
@@ -67,13 +67,13 @@ export class Ookla {
 
         // Test latency and jitter against the fastest server
         const socketClient = createSocketClient(bestServer.host);
-        const pingResult = await this.getLatencyAndJitter(socketClient, testUUID, 10, 20, true);
+        const pingResult = await this.measurePing(socketClient, testUUID, 10, 20, true);
         if (this.options.debug) {
             console.debug(`Your latency is ${ pingResult.latency } ms and jitter is ${ pingResult.jitter } ms`);
         }
 
         // Test download speed
-        let downloadResult: STDownloadResult;
+        let downloadResult: OADownloadResult;
         if (this.options.tests.measureDownload) {
             downloadResult = await this.measureDownloadSpeed(bestServers, bestServer, testUUID);
             if (this.options.debug) {
@@ -82,7 +82,7 @@ export class Ookla {
         }
 
         // Test upload speed
-        let uploadResult: STUploadResult;
+        let uploadResult: OAUploadResult;
         if (this.options.tests.measureUpload) {
             uploadResult = await this.measureUploadSpeed(bestServer, testUUID);
             if (this.options.debug) {
@@ -110,14 +110,14 @@ export class Ookla {
     /**
      * Retrieves the configuration for speedtest.net test.
      * @private
-     * @returns {Promise<STConfig>} Configuration for the current test
+     * @returns {Promise<OAConfig>} Configuration for the current test
      */
-    private async getConfig(): Promise<STConfig> {
+    private async getConfig(): Promise<OAConfig> {
         try {
             const response = await createGetRequest("https://www.speedtest.net/speedtest-config.php");
             const body = await response.text();
 
-            return ((await parseXML(body)).settings as STConfig);
+            return ((await parseXML(body)).settings as OAConfig);
         } catch {
             throw new Error("An error occurred while retrieving test configuration from speedtest.net.");
         }
@@ -127,16 +127,16 @@ export class Ookla {
      * Returns a list of the ten nearest speedtest.net servers with their latency.
      * @param {DistanceUnits} distanceUnit - Preferred unit of distance value
      * @private
-     * @returns {Promise<STMeasurementServer[]>} List of available servers
+     * @returns {Promise<OAMeasurementServer[]>} List of available servers
      */
-    private async getServersList(distanceUnit: DistanceUnits): Promise<STMeasurementServer[]> {
+    private async getServersList(distanceUnit: DistanceUnits): Promise<OAMeasurementServer[]> {
         let testsInProgress = 0;
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.ooklaOptions.serversToFetch }&https_functional=true`;
         try {
             const response = await createGetRequest(serversUrl);
             const body = await response.text();
 
-            const servers: STMeasurementServer[] = JSON.parse(body);
+            const servers: OAMeasurementServer[] = JSON.parse(body);
             return new Promise(resolve => {
                 servers.forEach(server => {
                     // Convert info to correct types
@@ -151,7 +151,7 @@ export class Ookla {
                     // Measure server latency and jitter in parallel
                     testsInProgress++;
                     const socketClient = createSocketClient(server.host);
-                    this.getLatencyAndJitter(socketClient, null, 5, 15, false).then(({ latency }) => {
+                    this.measurePing(socketClient, null, 5, 15, false).then(({ latency }) => {
                         server.latency = latency;
                         testsInProgress--;
 
@@ -168,11 +168,11 @@ export class Ookla {
 
     /**
      * Returns four servers with the lowest latency.
-     * @param {STMeasurementServer[]} servers - List of available servers
+     * @param {OAMeasurementServer[]} servers - List of available servers
      * @private
-     * @returns {Promise<STMeasurementServer>} The four fastest servers
+     * @returns {Promise<OAMeasurementServer>} The four fastest servers
      */
-    private async getBestServers(servers: STMeasurementServer[]): Promise<STMeasurementServer[]> {
+    private async getBestServers(servers: OAMeasurementServer[]): Promise<OAMeasurementServer[]> {
         return servers.sort((serverA, serverB) => serverA.latency - serverB.latency).slice(0, 4);
     }
 
@@ -184,9 +184,9 @@ export class Ookla {
      * @param {number} timeout - Maximum time that can be elapsed
      * @param {boolean} calculateJitter - Whether to calculate jitter or not
      * @private
-     * @returns {Promise<STLatencyJitter>} Latency and jitter of the server
+     * @returns {Promise<OAPingResult>} Latency and jitter of the server
      */
-    private getLatencyAndJitter(ws: WebSocket, uuid: string | null, requests: number, timeout: number, calculateJitter: boolean): Promise<STLatencyJitter> {
+    private measurePing(ws: WebSocket, uuid: string | null, requests: number, timeout: number, calculateJitter: boolean): Promise<OAPingResult> {
         const latencies: number[] = [];
         const jitters: number[] = [];
         let testNumber = 0;
@@ -246,13 +246,13 @@ export class Ookla {
 
     /**
      * Performs download speed measurement and returns the result.
-     * @param {STMeasurementServer[]} servers - All available measurement servers
-     * @param {STMeasurementServer} bestServer - The best measurement server
+     * @param {OAMeasurementServer[]} servers - All available measurement servers
+     * @param {OAMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
      * @private
-     * @returns {Promise<STDownloadResult>} Download speed measurement result
+     * @returns {Promise<OADownloadResult>} Download speed measurement result
      */
-    private async measureDownloadSpeed(servers: STMeasurementServer[], bestServer: STMeasurementServer, testUUID: string): Promise<STDownloadResult> {
+    private async measureDownloadSpeed(servers: OAMeasurementServer[], bestServer: OAMeasurementServer, testUUID: string): Promise<OADownloadResult> {
         let sampleBytes = 0;
 
         // Handler for interrupting active connections
@@ -261,17 +261,17 @@ export class Ookla {
 
         // Handler for current number of active connections
         let activeConnections = 0;
-        const increaseConnections = (server: STMeasurementServer) => {
+        const increaseConnections = (server: OAMeasurementServer) => {
             activeConnections++;
             server.activeConnections++;
         };
-        const decreaseConnections = (server: STMeasurementServer) => {
+        const decreaseConnections = (server: OAMeasurementServer) => {
             activeConnections--;
             server.activeConnections--;
         };
 
         // Handler for opening new connections
-        const openServerConnection = (server: STMeasurementServer) => {
+        const openServerConnection = (server: OAMeasurementServer) => {
             if (activeConnections >= 24) {
                 return;
             }
@@ -312,7 +312,7 @@ export class Ookla {
 
             // Start load latency test
             const socketClient = createSocketClient(bestServer.host);
-            const latencyTest = this.getLatencyAndJitter(socketClient, testUUID, -1, 15, true);
+            const pingTest = this.measurePing(socketClient, testUUID, -1, 15, true);
 
             const checkInterval = setInterval(async () => {
                 const now = Date.now();
@@ -348,7 +348,7 @@ export class Ookla {
                     abortController.abort();
 
                     // Calculate final download speed
-                    const { latency, jitter } = await latencyTest;
+                    const { latency, jitter } = await pingTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
                     const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.downloadUnit, finalSpeed);
                     resolve({
@@ -436,12 +436,12 @@ export class Ookla {
 
     /**
      * Performs upload speed measurement and returns the result.
-     * @param {STMeasurementServer} bestServer - The best measurement server
+     * @param {OAMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
      * @private
-     * @returns {Promise<STUploadResult>} Upload speed measurement result
+     * @returns {Promise<OAUploadResult>} Upload speed measurement result
      */
-    private async measureUploadSpeed(bestServer: STMeasurementServer, testUUID: string): Promise<STUploadResult> {
+    private async measureUploadSpeed(bestServer: OAMeasurementServer, testUUID: string): Promise<OAUploadResult> {
         let sampleBytes = 0;
 
         // Handler for interrupting active connections
@@ -485,7 +485,7 @@ export class Ookla {
 
             // Start load latency test
             const latencySocketClient = createSocketClient(bestServer.host);
-            const latencyTest = this.getLatencyAndJitter(latencySocketClient, testUUID, -1, 15, true);
+            const pingTest = this.measurePing(latencySocketClient, testUUID, -1, 15, true);
 
             const checkInterval = setInterval(async () => {
                 const now = Date.now();
@@ -519,7 +519,7 @@ export class Ookla {
                     statsSocketClient.close();
 
                     // Calculate final upload speed
-                    const { latency, jitter } = await latencyTest;
+                    const { latency, jitter } = await pingTest;
                     const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
                     const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.uploadUnit, finalSpeed);
                     resolve({

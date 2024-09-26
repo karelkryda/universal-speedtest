@@ -1,3 +1,4 @@
+// Ookla configuration interfaces
 export interface OoklaOptions {
     /** Perform Ookla test against multiple servers. */
     multiTest?: true;
@@ -5,24 +6,12 @@ export interface OoklaOptions {
     serversToFetch?: number;
 }
 
-/**
- * Test config interfaces.
- */
-// TODO: cleanup
-interface STConfig {
-    client: STConfigClient;
-    "server-config": STConfigServerConfig;
-    odometer: STConfigOdometer;
-    times: STConfigTimes;
-    download: STConfigDownload;
-    upload: STConfigUpload;
-    latency: STConfigLatency;
-    "socket-download": STConfigSocketLoad;
-    "socket-upload": STConfigSocketLoad;
-    "socket-latency": STConfigLatency;
+// Ookla test interfaces
+export interface OAConfig {
+    client: OAConfigClient;
 }
 
-interface STConfigClient {
+interface OAConfigClient {
     ip: string;
     lat: number;
     lon: number;
@@ -35,72 +24,7 @@ interface STConfigClient {
     country: string;
 }
 
-interface STConfigServerConfig {
-    threadcount: number;
-    ignoreids: string;
-    notonmap: string;
-    forcepingid: string;
-    preferredserverid: string;
-}
-
-interface STConfigOdometer {
-    start: number;
-    rate: number;
-}
-
-interface STConfigTimes {
-    dl1: number;
-    dl2: number;
-    dl3: number;
-    ul1: number;
-    ul2: number;
-    ul3: number;
-}
-
-interface STConfigDownload {
-    testlength: number;
-    initialtest: string;
-    mintestsize: string;
-    threadsperurl: number;
-}
-
-interface STConfigUpload {
-    testlength: number;
-    ratio: number;
-    initialtest: number;
-    mintestsize: string;
-    threads: number;
-    maxchunksize: string;
-    maxchunkcount: number;
-    threadsperurl: number;
-}
-
-interface STConfigLatency {
-    testlength: number;
-    waittime: number;
-    timeout: number;
-}
-
-interface STConfigSocketLoad {
-    testlength: number;
-    initialthreads: number | string;
-    minthreads: number | string;
-    maxthreads: number;
-    threadratio: string;
-    maxsamplesize: number;
-    minsamplesize: number;
-    startsamplesize: number;
-    startbuffersize: number;
-    bufferlength: number;
-    packetlength: number;
-    readbuffer?: number;
-    disabled?: boolean;
-}
-
-/**
- * Test interfaces.
- */
-interface STMeasurementServer {
+export interface OAMeasurementServer {
     id: number;
     host: string;
     name: string;
@@ -115,12 +39,12 @@ interface STMeasurementServer {
     activeConnections: number;
 }
 
-interface STLatencyJitter {
+export interface OAPingResult {
     latency: number;
     jitter: number;
 }
 
-interface STDownloadResult {
+export interface OADownloadResult {
     transferredBytes: number;
     latency: number;
     jitter: number;
@@ -128,7 +52,7 @@ interface STDownloadResult {
     totalTime: number;
 }
 
-interface STUploadResult {
+export interface OAUploadResult {
     transferredBytes: number;
     latency: number;
     jitter: number;
@@ -136,28 +60,19 @@ interface STUploadResult {
     totalTime: number;
 }
 
-interface STResult {
+export interface OAResult {
     /** Client information. */
-    client: STConfigClient;
+    client: OAConfigClient;
     /** Network ping measurement result. */
-    pingResult: STLatencyJitter;
+    pingResult: OAPingResult;
     /** Network download measurement result. */
-    downloadResult?: STDownloadResult;
+    downloadResult?: OADownloadResult;
     /** Network upload measurement result. */
-    uploadResult?: STUploadResult;
+    uploadResult?: OAUploadResult;
     /** Servers information. */
-    servers: STMeasurementServer[];
+    servers: OAMeasurementServer[];
     /** The best server information. */
-    bestServer: STMeasurementServer;
+    bestServer: OAMeasurementServer;
     /** Time the test lasted in seconds. */
     totalTime: number;
 }
-
-export {
-    STConfig,
-    STMeasurementServer,
-    STLatencyJitter,
-    STDownloadResult,
-    STUploadResult,
-    STResult
-};
