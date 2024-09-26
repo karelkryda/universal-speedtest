@@ -356,7 +356,7 @@ export class Ookla {
                         latency: latency,
                         jitter: jitter,
                         speed: Number(convertedSpeed.toFixed(2)),
-                        totalTime: elapsedTotalTime
+                        totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
                     });
                 }
             }, 750);
@@ -527,7 +527,7 @@ export class Ookla {
                         latency: latency,
                         jitter: jitter,
                         speed: Number(convertedSpeed.toFixed(2)),
-                        totalTime: elapsedTotalTime
+                        totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
                     });
                 }
             }, 750);
