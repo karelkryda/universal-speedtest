@@ -1,4 +1,4 @@
-import { OoklaOptions } from "./Speedtest.js";
+import { OoklaOptions } from "./ookla.js";
 
 export enum HttpMethods {
     GET = "GET",

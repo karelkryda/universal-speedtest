@@ -1,6 +1,6 @@
 import { DistanceUnits, SpeedUnits, STResult, USOptions } from "./interfaces/index.js";
 import { convertSpeedUnit } from "./utils/index.js";
-import { Speedtest } from "./tests/index.js";
+import { Ookla } from "./tests/index.js";
 
 /**
  * UniversalSpeedTest.
@@ -37,8 +37,8 @@ export class UniversalSpeedTest {
      * @returns {Promise<STResult>} Ookla Speedtest test result.
      */
     public performOoklaTest(): Promise<STResult> {
-        const speedTest = new Speedtest(this.options);
-        return speedTest.run();
+        const ooklaTest = new Ookla(this.options);
+        return ooklaTest.run();
     }
 }
 

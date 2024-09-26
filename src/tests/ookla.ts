@@ -26,7 +26,7 @@ import { ReadableStreamController } from "node:stream/web";
 /**
  * Ookla Speedtest test.
  */
-export class Speedtest {
+export class Ookla {
     private readonly options: USOptions;
 
     /**

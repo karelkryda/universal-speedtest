@@ -8,6 +8,7 @@ export interface OoklaOptions {
 /**
  * Test config interfaces.
  */
+// TODO: cleanup
 interface STConfig {
     client: STConfigClient;
     "server-config": STConfigServerConfig;

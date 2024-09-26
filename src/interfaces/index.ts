@@ -1,2 +1,2 @@
 export * from "./general.js";
-export * from "./Speedtest.js";
+export * from "./ookla.js";
