@@ -20,7 +20,6 @@ interface OAConfigClient {
     rating: number;
     ispdlavg: number;
     ispulavg: number;
-    loggedin: number;
     country: string;
 }
 
