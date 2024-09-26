@@ -15,20 +15,23 @@ export class UniversalSpeedTest {
     constructor(options?: USOptions) {
         this.options = {
             debug: false,
+            ...options,
             tests: {
                 measureDownload: true,
                 measureUpload: false,
+                ...options.tests
             },
             units: {
                 distanceUnit: DistanceUnits.mi,
                 downloadUnit: SpeedUnits.Mbps,
                 uploadUnit: SpeedUnits.Mbps,
+                ...options.units
             },
             ooklaOptions: {
                 multiTest: true,
                 serversToFetch: 10,
-            },
-            ...options
+                ...options.ooklaOptions
+            }
         };
     }
 
