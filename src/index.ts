@@ -30,6 +30,7 @@ export class UniversalSpeedTest {
             ooklaOptions: {
                 multiTest: true,
                 serversToFetch: 10,
+                technology: "http",
                 ...options.ooklaOptions
             }
         };

@@ -4,6 +4,8 @@ export interface OoklaOptions {
     multiTest?: true;
     /** Number of Ookla test servers to fetch. */
     serversToFetch?: number;
+    /** Technology used to perform the test. */
+    technology?: "http";
 }
 
 // Ookla test interfaces
