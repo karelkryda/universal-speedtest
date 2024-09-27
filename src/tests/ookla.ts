@@ -148,7 +148,7 @@ export class Ookla {
                         server.distance = convertMilesToKilometers(server.distance);
                     }
 
-                    // Measure server latency and jitter in parallel
+                    // Measure server latency in parallel
                     testsInProgress++;
                     const socketClient = createSocketClient(server.host);
                     this.measurePing(socketClient, null, 5, 15, false).then(({ latency }) => {

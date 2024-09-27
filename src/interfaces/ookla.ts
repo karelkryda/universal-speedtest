@@ -19,7 +19,6 @@ interface OAConfigClient {
     lon: number;
     isp: string;
     isprating: number;
-    rating: number;
     ispdlavg: number;
     ispulavg: number;
     country: string;
@@ -36,7 +35,6 @@ export interface OAMeasurementServer {
     cc: string;
     sponsor: string;
     latency: number;
-    jitter: number;
     activeConnections: number;
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "universal-speedtest",
   "description": "Test your network speed using Ookla speedtest.",
-  "version": "3.0.0",
+  "version": "3.0.0-rc.0",
   "main": "./dist/commonjs/index.js",
   "type": "module",
   "types": "./dist/commonjs/index.d.ts",
