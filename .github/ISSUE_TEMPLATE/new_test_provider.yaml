@@ -1,7 +1,7 @@
-name: "🌍 New test page request"
-description: Submit a proposal for a new speed test page
-title: "[New test]: "
-labels: [ "new-test-request" ]
+name: "🌍 New test provider request"
+description: Submit a proposal for a new speedtest provider
+title: "[New provider]: "
+labels: [ "new-provider-request" ]
 body:
   - type: markdown
     attributes:
@@ -11,15 +11,15 @@ body:
     id: no_duplicate_issues
     attributes:
       label: "⚠️ Please verify that this feature request has NOT been raised before."
-      description: Search in the issues sections by clicking [HERE](https://github.com/karelkryda/universal-speedtest/issues?q=new-test-request)
+      description: Search in the issues sections by clicking [HERE](https://github.com/karelkryda/universal-speedtest/issues?q=new-provider-request)
       options:
         - label: I checked and didn't find similar feature request
           required: true
   - type: input
     id: url
     attributes:
-      label: "🖇️ Test page URL"
-      description: Link to the test page.
+      label: "🖇️ Test provider URL"
+      description: Link to the test provider.
       placeholder: ex. speedtest.net
     validations:
       required: true
@@ -27,7 +27,7 @@ body:
     id: explanation
     attributes:
       label: "❓ Why"
-      description: A clear and concise description of why you would like to add this test page.
+      description: A clear and concise description of why you would like to add this test provider.
       placeholder: ex. In my use-case, ...
     validations:
       required: true
@@ -35,7 +35,7 @@ body:
     id: additional_context
     attributes:
       label: "📝 Additional context"
-      description: Add any other context or screenshots about the test page request here.
-      placeholder: ex. This test page could...
+      description: Add any other context or screenshots about the test provider request here.
+      placeholder: ex. This test provider could...
     validations:
       required: false

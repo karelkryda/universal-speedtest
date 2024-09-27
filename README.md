@@ -18,7 +18,7 @@
 </div>
 <hr>
 
-The Universal Speedtest library allows you to measure the speed of your Internet connection using various speed tests.
+The Universal Speedtest library allows you to measure the speed of your internet connection using Ookla speedtest.
 
 ## 🔧 Installation
 
@@ -36,17 +36,4 @@ $ npm install --save github:karelkryda/universal-speedtest#build
 
 ## 📗 Documentation
 
-The official documentation can be found [here](https://karel-kryda.gitbook.io/universal-speedtest/).
-
-## 🛑 Known limitations
-
-According to the reported problems, the library cannot currently be used together with React Native (and probably not
-even in the browser). This is due to the use of `perf_hooks` in the `urllib` library, which is used to perform speed
-tests.
-
-## 📢 Issues reporting
-
-A new major version of the library, 3.0.0, has been released and may contain bugs. I would like to ask you to report any
-problems so that I can fix them.
-
-Thank you for your understanding
+The official documentation can be found [here](https://karel-kryda.gitbook.io/universal-speedtest/v/3).
