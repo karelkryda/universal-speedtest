@@ -2,7 +2,7 @@
 
 <hr>
 <div>
-    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/development.yml?branch=main&label=Dev CI/CD&logo=github&style=for-the-badge" alt="Development CI/CD">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/development.yml?branch=development&label=Dev CI/CD&logo=github&style=for-the-badge" alt="Development CI/CD">
 </div>
 <div>
     <img src="https://img.shields.io/npm/v/universal-speedtest?logo=npm&style=for-the-badge" alt="Npm version">
