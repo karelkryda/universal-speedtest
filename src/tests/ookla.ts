@@ -370,7 +370,7 @@ export class Ookla {
      * @private
      * @returns {ReadableStream} Continuous data stream
      */
-    private createStream(chunkSize: number, controllerCreated: (controller: ReadableStreamController<any>) => void): ReadableStream {
+    private createStream(chunkSize: number, controllerCreated: (controller: ReadableStreamController<Uint8Array>) => void): ReadableStream {
         const generateChunk = (size: number): Uint8Array => {
             const chunk = new Uint8Array(size);
             for (let i = 0; i < size; i++) {
@@ -447,7 +447,7 @@ export class Ookla {
         // Handler for interrupting active connections
         const abortController = new AbortController();
         const abortSignal = abortController.signal;
-        const streamControllers: ReadableStreamController<any>[] = [];
+        const streamControllers: ReadableStreamController<Uint8Array>[] = [];
 
         // Handler for current number of active connections
         let activeConnections = 0;
@@ -467,7 +467,7 @@ export class Ookla {
         };
 
         // Perform upload speed measurement
-        return new Promise(async (resolve) => {
+        return new Promise((resolve, reject) => {
             const now = Date.now();
             const startTime = now;
             const bandwidthSamples: number[] = [];
@@ -476,61 +476,61 @@ export class Ookla {
 
             // Start upload stats gathering
             const statsSocketClient = createSocketClient(bestServer.host);
-            await this.startUploadStatsListener(statsSocketClient, testUUID, 20, (deliveredBytes) => sampleBytes += deliveredBytes);
-
-            // Open initial connections to the best server
-            for (let connections = 0; connections < 4; connections++) {
-                openServerConnection();
-            }
-
-            // Start load latency test
-            const latencySocketClient = createSocketClient(bestServer.host);
-            const pingTest = this.measurePing(latencySocketClient, testUUID, -1, 15, true);
-
-            const checkInterval = setInterval(async () => {
-                const now = Date.now();
-                const sampleBytesNow = sampleBytes;
-                const elapsedSampleTime = now - lastSampleTime;
-                const bandwidthInBytes = (sampleBytesNow / (elapsedSampleTime / 1_000));
-
-                // Save current bandwidth
-                transferredBytes += sampleBytesNow;
-                sampleBytes -= sampleBytesNow;
-                lastSampleTime = now;
-                bandwidthSamples.push(bandwidthInBytes);
-
-                // Calculate current progress in percents
-                const elapsedTotalTime = now - startTime;
-                const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
-                if (progressPercentage < 50) {
-                    // Check whether additional connections should be opened
-                    const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
-                    const additionalConnections = recommendedConnections - activeConnections;
-                    for (let connections = 0; connections < additionalConnections; connections++) {
-                        openServerConnection();
-                    }
-                } else if (progressPercentage === 100) {
-                    clearInterval(checkInterval);
-
-                    // Abort all active connections
-                    latencySocketClient.close();
-                    streamControllers.forEach(streamController => streamController.close());
-                    abortController.abort();
-                    statsSocketClient.close();
-
-                    // Calculate final upload speed
-                    const { latency, jitter } = await pingTest;
-                    const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
-                    const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.uploadUnit, finalSpeed);
-                    resolve({
-                        transferredBytes: transferredBytes,
-                        latency: latency,
-                        jitter: jitter,
-                        speed: Number(convertedSpeed.toFixed(2)),
-                        totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
-                    });
+            this.startUploadStatsListener(statsSocketClient, testUUID, 20, (deliveredBytes) => sampleBytes += deliveredBytes).then(() => {
+                // Open initial connections to the best server
+                for (let connections = 0; connections < 4; connections++) {
+                    openServerConnection();
                 }
-            }, 750);
+
+                // Start load latency test
+                const latencySocketClient = createSocketClient(bestServer.host);
+                const pingTest = this.measurePing(latencySocketClient, testUUID, -1, 15, true);
+
+                const checkInterval = setInterval(async () => {
+                    const now = Date.now();
+                    const sampleBytesNow = sampleBytes;
+                    const elapsedSampleTime = now - lastSampleTime;
+                    const bandwidthInBytes = (sampleBytesNow / (elapsedSampleTime / 1_000));
+
+                    // Save current bandwidth
+                    transferredBytes += sampleBytesNow;
+                    sampleBytes -= sampleBytesNow;
+                    lastSampleTime = now;
+                    bandwidthSamples.push(bandwidthInBytes);
+
+                    // Calculate current progress in percents
+                    const elapsedTotalTime = now - startTime;
+                    const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                    if (progressPercentage < 50) {
+                        // Check whether additional connections should be opened
+                        const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
+                        const additionalConnections = recommendedConnections - activeConnections;
+                        for (let connections = 0; connections < additionalConnections; connections++) {
+                            openServerConnection();
+                        }
+                    } else if (progressPercentage === 100) {
+                        clearInterval(checkInterval);
+
+                        // Abort all active connections
+                        latencySocketClient.close();
+                        streamControllers.forEach(streamController => streamController.close());
+                        abortController.abort();
+                        statsSocketClient.close();
+
+                        // Calculate final upload speed
+                        const { latency, jitter } = await pingTest;
+                        const finalSpeed = this.calculateSpeedFromSamples(bandwidthSamples);
+                        const convertedSpeed = convertSpeedUnit(SpeedUnits.Bps, this.options.units.uploadUnit, finalSpeed);
+                        resolve({
+                            transferredBytes: transferredBytes,
+                            latency: latency,
+                            jitter: jitter,
+                            speed: Number(convertedSpeed.toFixed(2)),
+                            totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
+                        });
+                    }
+                }, 750);
+            }).catch(reject);
         });
     }
 

@@ -27,7 +27,7 @@ export function createGetRequest(url: string, abortSignal?: AbortSignal): Promis
  * @param abortSignal - request abort signal
  * @returns {Promise<Response>} fetch request
  */
-export function createPostRequest(url: string, body: any, abortSignal?: AbortSignal): Promise<Response> {
+export function createPostRequest(url: string, body: ReadableStream, abortSignal?: AbortSignal): Promise<Response> {
     return fetch(url, {
         headers: {
             "User-Agent": USER_AGENT,
@@ -60,6 +60,7 @@ export function createSocketClient(host: string): WebSocket {
  * @param xml - XML string to be parsed
  * @returns {Promise<any>} XML as object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseXML(xml: string): Promise<any> {
     if (XMLValidator.validate(xml) === true)
         return new Promise(resolve => {
