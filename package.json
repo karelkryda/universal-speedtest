@@ -7,7 +7,7 @@
   "types": "./dist/commonjs/index.d.ts",
   "scripts": {
     "build": "tshy && npm run updateVersion",
-    "test": "jest",
+    "test": "jest ./tests",
     "lint": "eslint . --ext .ts",
     "lintFix": "eslint . --ext .ts --fix",
     "updateVersion": "node updateVersion.js"

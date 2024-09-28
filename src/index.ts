@@ -19,19 +19,19 @@ export class UniversalSpeedTest {
             tests: {
                 measureDownload: true,
                 measureUpload: false,
-                ...options.tests
+                ...options?.tests
             },
             units: {
                 distanceUnit: DistanceUnits.mi,
                 downloadUnit: SpeedUnits.Mbps,
                 uploadUnit: SpeedUnits.Mbps,
-                ...options.units
+                ...options?.units
             },
             ooklaOptions: {
                 multiTest: true,
                 serversToFetch: 10,
                 technology: "http",
-                ...options.ooklaOptions
+                ...options?.ooklaOptions
             }
         };
     }
