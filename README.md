@@ -2,9 +2,7 @@
 
 <hr>
 <div>
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Lint?label=Lint&logo=github&style=for-the-badge" alt="Lint check">
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Build?logo=github&style=for-the-badge" alt="Build check">
-    <img src="https://img.shields.io/github/workflow/status/karelkryda/universal-speedtest/Tests?label=Tests&logo=github&style=for-the-badge" alt="Tests">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/development.yml?branch=main&label=Dev CI/CD&logo=github&style=for-the-badge" alt="Development CI/CD">
 </div>
 <div>
     <img src="https://img.shields.io/npm/v/universal-speedtest?logo=npm&style=for-the-badge" alt="Npm version">
@@ -18,9 +16,9 @@
 </div>
 <hr>
 
-The Universal Speedtest library allows you to measure the speed of your Internet connection using various speed tests.
+The Universal Speedtest library allows you to measure the speed of your internet connection using Ookla speedtest.
 
-# 🔧 Installation
+## 🔧 Installation
 
 ### Latest release
 
@@ -34,15 +32,6 @@ $ npm install --save universal-speedtest
 $ npm install --save github:karelkryda/universal-speedtest#build
 ```
 
-# 📗 Documentation
+## 📗 Documentation
 
-The official documentation can be found [here](https://karel-kryda.gitbook.io/universal-speedtest/).
-
-## 📢 Issues reporting
-
-I would like to ask you to report any errors so that I can correct them.
-<br>
-A new version of the library, 3.0.0, has
-recently been released and may contain errors.
-
-Thank you for your understanding
+The official documentation can be found [here](https://karel-kryda.gitbook.io/universal-speedtest/v/3).
