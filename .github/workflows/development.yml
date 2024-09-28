@@ -1,4 +1,4 @@
-name: CD - Development Build
+name: Development CI + CD
 
 on:
   push:
@@ -6,34 +6,54 @@ on:
       - development
 
 jobs:
-  production-build:
+  verify:
+    name: 🔎 Development verification
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout 🛎️
+      - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup NodeJS 18 🔃
+      - name: 🔃 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: latest
+          cache: npm
 
-      - name: Use CI Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node18-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node18-
-
-      - name: Install 🔧
+      - name: 🔧 Install dependencies
         run: npm install
 
-      - name: Build 🏗️
+      - name: 🧐 Check code syntax
+        run: npm run lint
+
+      - name: 🏗️ Build library
         run: npm run build
 
-      - name: Push new code 🚀
-        if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+      - name: 🚨 Test code functionality
+        run: npm test
+
+  build:
+    name: 🚀 Development build
+    runs-on: ubuntu-latest
+    needs: verify
+
+    steps:
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔃 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: npm
+
+      - name: 🔧 Install dependencies
+        run: npm install
+
+      - name: 🏗️ Build library
+        run: npm run build
+
+      - name: 🚀 Push new code
         run: |
           echo -e "\n# Initialize some useful variables"
           REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"

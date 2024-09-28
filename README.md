@@ -2,9 +2,7 @@
 
 <hr>
 <div>
-    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/lint.yml?branch=main&label=Lint&logo=github&style=for-the-badge" alt="Lint check">
-    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/build.yml?branch=main&logo=github&style=for-the-badge" alt="Build check">
-    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/tests.yml?branch=main&label=Tests&logo=github&style=for-the-badge" alt="Tests">
+    <img src="https://img.shields.io/github/actions/workflow/status/karelkryda/universal-speedtest/development.yml?branch=main&label=Dev CI/CD&logo=github&style=for-the-badge" alt="Development CI/CD">
 </div>
 <div>
     <img src="https://img.shields.io/npm/v/universal-speedtest?logo=npm&style=for-the-badge" alt="Npm version">
