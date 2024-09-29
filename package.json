@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/karelkryda/universal-speedtest.git"
+    "url": "git+https://github.com/karelkryda/universal-speedtest.git"
   },
   "homepage": "https://github.com/karelkryda/universal-speedtest#readme",
   "bugs": {

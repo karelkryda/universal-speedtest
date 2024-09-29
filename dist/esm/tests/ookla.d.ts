@@ -1,4 +1,4 @@
-import { OAResult, USOptions } from "../interfaces/index.js";
+import { OAMeasurementServer, OAResult, USOptions } from "../interfaces/index.js";
 /**
  * Ookla Speedtest test.
  */
@@ -9,6 +9,13 @@ export declare class Ookla {
      * @param {USOptions} options - UniversalSpeedTest options object
      */
     constructor(options: USOptions);
+    /**
+     * Searches Ookla test servers based on search term.
+     * @param searchTerm - Search term
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     */
+    searchServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]>;
     /**
      * Performs the Ookla Speedtest measurement.
      * @returns {Promise<OAResult>} Results of the Ookla test

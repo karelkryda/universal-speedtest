@@ -18,6 +18,33 @@ class Ookla {
         this.options = options;
     }
     /**
+     * Searches Ookla test servers based on search term.
+     * @param searchTerm - Search term
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     */
+    async searchServers(searchTerm, serversToFetch) {
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&search=${searchTerm}&limit=${serversToFetch || 100}&https_functional=true`;
+        try {
+            const response = await (0, index_js_2.createGetRequest)(serversUrl);
+            const body = await response.text();
+            const servers = JSON.parse(body);
+            servers.forEach(server => {
+                // Convert info to correct types
+                server.id = Number(server.id);
+                server.lat = Number(server.lat);
+                server.lon = Number(server.lon);
+                if (this.options.units.distanceUnit === index_js_1.DistanceUnits.km) {
+                    server.distance = (0, index_js_2.convertMilesToKilometers)(server.distance);
+                }
+            });
+            return servers;
+        }
+        catch {
+            throw new Error("An error occurred while retrieving the server list from speedtest.net.");
+        }
+    }
+    /**
      * Performs the Ookla Speedtest measurement.
      * @returns {Promise<OAResult>} Results of the Ookla test
      */
