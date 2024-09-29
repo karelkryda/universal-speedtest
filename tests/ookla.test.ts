@@ -1,6 +1,24 @@
 import { UniversalSpeedTest } from "../src/index.js";
 
-describe("Ookla test", () => {
+describe("Ookla search test", () => {
+    it("Run Ookla search test #1", async () => {
+        const test = new UniversalSpeedTest();
+        const servers = await test.searchOoklaServers("czechia", 14);
+
+        expect(servers.length).toEqual(14);
+        expect(typeof servers.at(5).id).toBe("number");
+    }, 4_000);
+
+    it("Run Ookla search test #2", async () => {
+        const test = new UniversalSpeedTest();
+        const servers = await test.searchOoklaServers("czechia");
+
+        expect(servers.length).toBeGreaterThan(40);
+        expect(typeof servers.at(28).id).toBe("number");
+    }, 4_000);
+});
+
+describe("Ookla measurement test", () => {
     it("Run Ookla speed test without measuring", async () => {
         const test = new UniversalSpeedTest({
             tests: {

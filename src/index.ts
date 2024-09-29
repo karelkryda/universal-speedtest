@@ -1,4 +1,4 @@
-import { DistanceUnits, OAResult, SpeedUnits, USOptions } from "./interfaces/index.js";
+import { DistanceUnits, OAMeasurementServer, OAResult, SpeedUnits, USOptions } from "./interfaces/index.js";
 import { convertSpeedUnit } from "./utils/index.js";
 import { Ookla } from "./tests/index.js";
 
@@ -37,8 +37,19 @@ export class UniversalSpeedTest {
     }
 
     /**
-     * Performs measurements using speedtest.net
-     * @returns {Promise<OAResult>} Ookla Speedtest test result.
+     * Searches Ookla test servers based on search term.
+     * @param searchTerm - Search term
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     */
+    public searchOoklaServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]> {
+        const ooklaTest = new Ookla(this.options);
+        return ooklaTest.searchServers(searchTerm, serversToFetch);
+    }
+
+    /**
+     * Performs speedtest using Ookla servers.
+     * @returns {Promise<OAResult>} Ookla test result
      */
     public performOoklaTest(): Promise<OAResult> {
         const ooklaTest = new Ookla(this.options);
