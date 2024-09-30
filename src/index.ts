@@ -59,11 +59,12 @@ export class UniversalSpeedTest {
 
     /**
      * Performs speedtest using Ookla servers.
+     * @param server - Test server to be used for measurement
      * @returns {Promise<OAResult>} Ookla test result
      */
-    public performOoklaTest(): Promise<OAResult> {
+    public performOoklaTest(server?: OAMeasurementServer): Promise<OAResult> {
         const ooklaTest = new Ookla(this.options);
-        return ooklaTest.runTest();
+        return ooklaTest.runTest(server);
     }
 }
 

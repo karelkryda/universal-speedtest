@@ -88,11 +88,12 @@ export class Ookla {
 
     /**
      * Performs the Ookla Speedtest measurement.
+     * @param server - Test server to be used for measurement
      * @returns {Promise<OAResult>} Results of the Ookla test
      */
-    public async runTest(): Promise<OAResult> {
+    public async runTest(server?: OAMeasurementServer): Promise<OAResult> {
         const testUUID = randomUUID();
-        const multiConnectionTest = (this.options.ooklaOptions.connections === "multi");
+        const multiConnectionTest = !server && (this.options.ooklaOptions.connections === "multi");
         const testStartTime = Date.now();
 
         // Get and parse test config
@@ -105,7 +106,7 @@ export class Ookla {
         // Get available servers and the fastest server(s)
         const servers: OAMeasurementServer[] = await this.prepareTestServers();
         const bestServers: OAMeasurementServer[] = await this.getBestServers(servers);
-        const bestServer: OAMeasurementServer = bestServers.at(0);
+        const bestServer: OAMeasurementServer = server || bestServers.at(0);
         if (this.options.debug) {
             if (multiConnectionTest) {
                 console.debug("Selected servers are:");
