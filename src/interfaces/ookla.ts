@@ -1,9 +1,9 @@
 // Ookla configuration interfaces
 export interface OoklaOptions {
-    /** Perform Ookla test against multiple servers. */
-    multiTest?: true;
     /** Number of Ookla test servers to fetch. */
     serversToFetch?: number;
+    /** Perform Ookla test against single or multiple servers. */
+    connections?: "single" | "multi";
     /** Technology used to perform the test. */
     technology?: "http";
 }
@@ -48,6 +48,7 @@ export interface OADownloadResult {
     latency: number;
     jitter: number;
     speed: number;
+    servers: OAMeasurementServer[];
     totalTime: number;
 }
 
@@ -56,6 +57,7 @@ export interface OAUploadResult {
     latency: number;
     jitter: number;
     speed: number;
+    servers: OAMeasurementServer[];
     totalTime: number;
 }
 

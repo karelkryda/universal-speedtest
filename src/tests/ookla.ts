@@ -70,8 +70,9 @@ export class Ookla {
      * Performs the Ookla Speedtest measurement.
      * @returns {Promise<OAResult>} Results of the Ookla test
      */
-    public async run(): Promise<OAResult> {
+    public async runTest(): Promise<OAResult> {
         const testUUID = randomUUID();
+        const multiConnectionTest = (this.options.ooklaOptions.connections === "multi");
         const testStartTime = Date.now();
 
         // Get and parse test config
@@ -86,7 +87,7 @@ export class Ookla {
         const bestServers: OAMeasurementServer[] = await this.getBestServers(servers);
         const bestServer: OAMeasurementServer = bestServers.at(0);
         if (this.options.debug) {
-            if (this.options.ooklaOptions.multiTest) {
+            if (multiConnectionTest) {
                 console.debug("Selected servers are:");
                 bestServers.forEach(server => console.debug(`  - ${ server.sponsor } (${ server.distance } ${ this.options.units.distanceUnit }, ${ server.latency } ms)`));
             } else {
@@ -104,7 +105,7 @@ export class Ookla {
         // Test download speed
         let downloadResult: OADownloadResult;
         if (this.options.tests.measureDownload) {
-            downloadResult = await this.measureDownloadSpeed(bestServers, bestServer, testUUID);
+            downloadResult = await this.measureDownloadSpeed(bestServers, bestServer, testUUID, multiConnectionTest);
             if (this.options.debug) {
                 console.debug(`Download speed is ${ downloadResult.speed } ${ this.options.units.downloadUnit }`);
             }
@@ -278,10 +279,11 @@ export class Ookla {
      * @param {OAMeasurementServer[]} servers - All available measurement servers
      * @param {OAMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
+     * @param {boolean} multiConnectionTest - Whether measurement should use single multiple servers
      * @private
      * @returns {Promise<OADownloadResult>} Download speed measurement result
      */
-    private async measureDownloadSpeed(servers: OAMeasurementServer[], bestServer: OAMeasurementServer, testUUID: string): Promise<OADownloadResult> {
+    private async measureDownloadSpeed(servers: OAMeasurementServer[], bestServer: OAMeasurementServer, testUUID: string, multiConnectionTest: boolean): Promise<OADownloadResult> {
         let sampleBytes = 0;
 
         // Handler for interrupting active connections
@@ -337,7 +339,13 @@ export class Ookla {
             let transferredBytes = 0;
 
             // Open initial connection to all available servers
-            servers.forEach(openServerConnection);
+            if (multiConnectionTest) {
+                servers.forEach(openServerConnection);
+            } else {
+                for (let connections = 0; connections < 4; connections++) {
+                    openServerConnection(bestServer);
+                }
+            }
 
             // Start load latency test
             const socketClient = createSocketClient(bestServer.host);
@@ -363,9 +371,14 @@ export class Ookla {
                     const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
-                        const server = servers
-                            .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
-                            .at(0);
+                        let server: OAMeasurementServer;
+                        if (multiConnectionTest) {
+                            server = servers
+                                .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
+                                .at(0);
+                        } else {
+                            server = bestServer;
+                        }
 
                         openServerConnection(server);
                     }
@@ -385,6 +398,7 @@ export class Ookla {
                         latency: latency,
                         jitter: jitter,
                         speed: Number(convertedSpeed.toFixed(2)),
+                        servers: (multiConnectionTest) ? servers : [ bestServer ],
                         totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
                     });
                 }
@@ -555,6 +569,7 @@ export class Ookla {
                             latency: latency,
                             jitter: jitter,
                             speed: Number(convertedSpeed.toFixed(2)),
+                            servers: [ bestServer ],
                             totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
                         });
                     }

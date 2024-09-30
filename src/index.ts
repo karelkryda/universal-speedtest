@@ -28,8 +28,8 @@ export class UniversalSpeedTest {
                 ...options?.units
             },
             ooklaOptions: {
-                multiTest: true,
                 serversToFetch: 10,
+                connections: "multi",
                 technology: "http",
                 ...options?.ooklaOptions
             }
@@ -53,7 +53,7 @@ export class UniversalSpeedTest {
      */
     public performOoklaTest(): Promise<OAResult> {
         const ooklaTest = new Ookla(this.options);
-        return ooklaTest.run();
+        return ooklaTest.runTest();
     }
 }
 
