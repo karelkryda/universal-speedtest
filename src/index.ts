@@ -37,6 +37,16 @@ export class UniversalSpeedTest {
     }
 
     /**
+     * Lists Ookla test servers.
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     */
+    public listOoklaServers(serversToFetch?: number): Promise<OAMeasurementServer[]> {
+        const ooklaTest = new Ookla(this.options);
+        return ooklaTest.listServers(serversToFetch);
+    }
+
+    /**
      * Searches Ookla test servers based on search term.
      * @param searchTerm - Search term
      * @param serversToFetch - Number of test servers to fetch

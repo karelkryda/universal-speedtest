@@ -38,6 +38,16 @@ export class Ookla {
     }
 
     /**
+     * Lists Ookla test servers.
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     */
+    public async listServers(serversToFetch?: number): Promise<OAMeasurementServer[]> {
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ serversToFetch || 100 }&https_functional=true`;
+        return this.getServersList(serversUrl);
+    }
+
+    /**
      * Searches Ookla test servers based on search term.
      * @param searchTerm - Search term
      * @param serversToFetch - Number of test servers to fetch
@@ -45,6 +55,16 @@ export class Ookla {
      */
     public async searchServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]> {
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&search=${ searchTerm }&limit=${ serversToFetch || 100 }&https_functional=true`;
+        return this.getServersList(serversUrl);
+    }
+
+    /**
+     * Returns a list of Ookla test servers.
+     * @param serversUrl - URL to fetch servers from
+     * @private
+     * @returns {Promise<OAMeasurementServer[]>} List of available servers
+     */
+    private async getServersList(serversUrl: string): Promise<OAMeasurementServer[]> {
         try {
             const response = await createGetRequest(serversUrl);
             const body = await response.text();
@@ -83,7 +103,7 @@ export class Ookla {
         }
 
         // Get available servers and the fastest server(s)
-        const servers: OAMeasurementServer[] = await this.getServersList(this.options.units.distanceUnit);
+        const servers: OAMeasurementServer[] = await this.prepareTestServers();
         const bestServers: OAMeasurementServer[] = await this.getBestServers(servers);
         const bestServer: OAMeasurementServer = bestServers.at(0);
         if (this.options.debug) {
@@ -155,28 +175,16 @@ export class Ookla {
 
     /**
      * Returns a list of the ten nearest speedtest.net servers with their latency.
-     * @param {DistanceUnits} distanceUnit - Preferred unit of distance value
      * @private
      * @returns {Promise<OAMeasurementServer[]>} List of available servers
      */
-    private async getServersList(distanceUnit: DistanceUnits): Promise<OAMeasurementServer[]> {
+    private async prepareTestServers(): Promise<OAMeasurementServer[]> {
         let testsInProgress = 0;
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ this.options.ooklaOptions.serversToFetch }&https_functional=true`;
         try {
-            const response = await createGetRequest(serversUrl);
-            const body = await response.text();
-
-            const servers: OAMeasurementServer[] = JSON.parse(body);
+            const servers = await this.listServers(this.options.ooklaOptions.serversToFetch);
             return new Promise(resolve => {
                 servers.forEach(server => {
-                    // Convert info to correct types
-                    server.id = Number(server.id);
-                    server.lat = Number(server.lat);
-                    server.lon = Number(server.lon);
                     server.activeConnections = 0;
-                    if (distanceUnit === DistanceUnits.km) {
-                        server.distance = convertMilesToKilometers(server.distance);
-                    }
 
                     // Measure server latency in parallel
                     testsInProgress++;
