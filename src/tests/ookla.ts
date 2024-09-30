@@ -366,8 +366,12 @@ export class Ookla {
                 // Calculate current progress in percents
                 const elapsedTotalTime = now - startTime;
                 const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                if (this.options.debug) {
+                    console.debug(`Download test progress: ${ progressPercentage }%`);
+                }
+
+                // Check whether additional connections should be opened
                 if (progressPercentage < 50) {
-                    // Check whether additional connections should be opened
                     const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
@@ -544,8 +548,12 @@ export class Ookla {
                     // Calculate current progress in percents
                     const elapsedTotalTime = now - startTime;
                     const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                    if (this.options.debug) {
+                        console.debug(`Upload test progress: ${ progressPercentage }%`);
+                    }
+
+                    // Check whether additional connections should be opened
                     if (progressPercentage < 50) {
-                        // Check whether additional connections should be opened
                         const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
                         const additionalConnections = recommendedConnections - activeConnections;
                         for (let connections = 0; connections < additionalConnections; connections++) {
