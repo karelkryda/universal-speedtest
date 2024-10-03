@@ -27,7 +27,7 @@ export function createGetRequest(url: string, abortSignal?: AbortSignal): Promis
  * @param abortSignal - request abort signal
  * @returns {Promise<Response>} fetch request
  */
-export function createPostRequest(url: string, body: ReadableStream, abortSignal?: AbortSignal): Promise<Response> {
+export function createPostRequest(url: string, body: Blob, abortSignal?: AbortSignal): Promise<Response> {
     return fetch(url, {
         headers: {
             "User-Agent": USER_AGENT,

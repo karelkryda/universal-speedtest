@@ -21,7 +21,6 @@ import {
     createSocketClient,
     parseXML
 } from "../utils/index.js";
-import { ReadableStreamController } from "node:stream/web";
 
 /**
  * Ookla Speedtest test.
@@ -395,6 +394,20 @@ export class Ookla {
 
                         openServerConnection(server);
                     }
+                } else if (progressPercentage < 100) {
+                    const additionalConnections = 4 - activeConnections;
+                    for (let connections = 0; connections < additionalConnections; connections++) {
+                        let server: OAMeasurementServer;
+                        if (multiConnectionTest) {
+                            server = servers
+                                .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
+                                .at(0);
+                        } else {
+                            server = bestServer;
+                        }
+
+                        openServerConnection(server);
+                    }
                 } else if (progressPercentage === 100) {
                     clearInterval(checkInterval);
 
@@ -416,35 +429,6 @@ export class Ookla {
                     });
                 }
             }, 750);
-        });
-    }
-
-    /**
-     * Returns data stream for upload test.
-     * @param chunkSize - size of each stream chunk
-     * @param controllerCreated - callback to return newly created stream controller
-     * @private
-     * @returns {ReadableStream} Continuous data stream
-     */
-    private createStream(chunkSize: number, controllerCreated: (controller: ReadableStreamController<Uint8Array>) => void): ReadableStream {
-        const generateChunk = (size: number): Uint8Array => {
-            const chunk = new Uint8Array(size);
-            for (let i = 0; i < size; i++) {
-                chunk[i] = Math.floor(Math.random() * 256);
-            }
-
-            return chunk;
-        };
-
-        return new ReadableStream({
-            start(controller) {
-                controllerCreated(controller);
-            },
-
-            pull(controller) {
-                const chunk = generateChunk(chunkSize);
-                controller.enqueue(chunk);
-            }
         });
     }
 
@@ -503,7 +487,6 @@ export class Ookla {
         // Handler for interrupting active connections
         const abortController = new AbortController();
         const abortSignal = abortController.signal;
-        const streamControllers: ReadableStreamController<Uint8Array>[] = [];
 
         // Handler for current number of active connections
         let activeConnections = 0;
@@ -516,10 +499,10 @@ export class Ookla {
                 return;
             }
 
-            const dataStream = this.createStream(1_024, (controller) => streamControllers.push(controller));
+            const data = new Blob([ new Uint8Array(25_000_000) ]);
             increaseConnections();
             const uploadUrl = `https://${ bestServer.host }/upload?nocache=${ Math.random() }&guid=${ testUUID }`;
-            createPostRequest(uploadUrl, dataStream, abortSignal).catch(decreaseConnections);
+            createPostRequest(uploadUrl, data, abortSignal).then(decreaseConnections).catch(decreaseConnections);
         };
 
         // Perform upload speed measurement
@@ -568,12 +551,16 @@ export class Ookla {
                         for (let connections = 0; connections < additionalConnections; connections++) {
                             openServerConnection();
                         }
+                    } else if (progressPercentage < 100) {
+                        const additionalConnections = 4 - activeConnections;
+                        for (let connections = 0; connections < additionalConnections; connections++) {
+                            openServerConnection();
+                        }
                     } else if (progressPercentage === 100) {
                         clearInterval(checkInterval);
 
                         // Abort all active connections
                         latencySocketClient.close();
-                        streamControllers.forEach(streamController => streamController.close());
                         abortController.abort();
                         statsSocketClient.close();
 
