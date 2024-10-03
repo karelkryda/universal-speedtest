@@ -13,6 +13,28 @@ import {
     USOptions
 } from "../interfaces/index.js";
 import {
+    DEFAULT_SERVER_LIST_SIZE,
+    DOWNLOAD_LATENCY_TEST_REQUESTS,
+    DOWNLOAD_LATENCY_TEST_TIMEOUT,
+    DOWNLOAD_TEST_DURATION,
+    DOWNLOAD_TEST_INITIAL_CONNECTIONS,
+    DOWNLOAD_TEST_MAX_CONNECTIONS,
+    DOWNLOAD_TEST_SCALING_RATIO,
+    DOWNLOAD_TEST_SIZE,
+    LATENCY_TEST_REQUESTS,
+    LATENCY_TEST_TIMEOUT,
+    SERVER_LATENCY_TEST_REQUESTS,
+    SERVER_LATENCY_TEST_TIMEOUT,
+    UPLOAD_LATENCY_TEST_REQUESTS,
+    UPLOAD_LATENCY_TEST_TIMEOUT,
+    UPLOAD_STATS_LISTENER_TIMEOUT,
+    UPLOAD_TEST_DURATION,
+    UPLOAD_TEST_INITIAL_CONNECTIONS,
+    UPLOAD_TEST_MAX_CONNECTIONS,
+    UPLOAD_TEST_SCALING_RATIO,
+    UPLOAD_TEST_SIZE
+} from "../constants/ookla.js";
+import {
     average,
     convertMilesToKilometers,
     convertSpeedUnit,
@@ -42,7 +64,7 @@ export class Ookla {
      * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
      */
     public async listServers(serversToFetch?: number): Promise<OAMeasurementServer[]> {
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ serversToFetch || 100 }&https_functional=true`;
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ serversToFetch || DEFAULT_SERVER_LIST_SIZE }&https_functional=true`;
         return this.getServersList(serversUrl);
     }
 
@@ -53,7 +75,7 @@ export class Ookla {
      * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
      */
     public async searchServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]> {
-        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&search=${ searchTerm }&limit=${ serversToFetch || 100 }&https_functional=true`;
+        const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&search=${ searchTerm }&limit=${ serversToFetch || DEFAULT_SERVER_LIST_SIZE }&https_functional=true`;
         return this.getServersList(serversUrl);
     }
 
@@ -117,7 +139,7 @@ export class Ookla {
 
         // Test latency and jitter against the fastest server
         const socketClient = createSocketClient(bestServer.host);
-        const pingResult = await this.measurePing(socketClient, testUUID, 10, 20, true);
+        const pingResult = await this.measurePing(socketClient, testUUID, LATENCY_TEST_REQUESTS, LATENCY_TEST_TIMEOUT, true);
         if (this.options.debug) {
             console.debug(`Your latency is ${ pingResult.latency } ms and jitter is ${ pingResult.jitter } ms`);
         }
@@ -141,7 +163,7 @@ export class Ookla {
         }
 
         const testEndTime = Date.now();
-        const elapsedTime = Number(((testEndTime - testStartTime) / 1000).toFixed(1));
+        const elapsedTime = Number(((testEndTime - testStartTime) / 1_000).toFixed(1));
         if (this.options.debug) {
             console.debug(`Test was performed in ${ elapsedTime } seconds`);
         }
@@ -189,7 +211,7 @@ export class Ookla {
                     // Measure server latency in parallel
                     testsInProgress++;
                     const socketClient = createSocketClient(server.host);
-                    this.measurePing(socketClient, null, 5, 15, false).then(({ latency }) => {
+                    this.measurePing(socketClient, null, SERVER_LATENCY_TEST_REQUESTS, SERVER_LATENCY_TEST_TIMEOUT, false).then(({ latency }) => {
                         server.latency = latency;
                         testsInProgress--;
 
@@ -238,7 +260,7 @@ export class Ookla {
                 ws.send("GETIP");
                 ws.send("CAPABILITIES");
                 ws.send("PING ");
-                autoClose = setTimeout(() => ws.close, timeout * 1000);
+                autoClose = setTimeout(() => ws.close, timeout * 1_000);
             });
 
             ws.on("message", (data) => {
@@ -311,12 +333,12 @@ export class Ookla {
 
         // Handler for opening new connections
         const openServerConnection = (server: OAMeasurementServer) => {
-            if (activeConnections >= 24) {
+            if (activeConnections >= DOWNLOAD_TEST_MAX_CONNECTIONS) {
                 return;
             }
 
             increaseConnections(server);
-            const downloadUrl = `https://${ server.host }/download?nocache=${ Math.random() }&size=25000000&guid=${ testUUID }`;
+            const downloadUrl = `https://${ server.host }/download?nocache=${ Math.random() }&size=${ DOWNLOAD_TEST_SIZE }&guid=${ testUUID }`;
             createGetRequest(downloadUrl, abortSignal).then(response => {
                 if (response.ok) {
                     // Handler for capturing downloaded bytes
@@ -350,14 +372,14 @@ export class Ookla {
             if (multiConnectionTest) {
                 servers.forEach(openServerConnection);
             } else {
-                for (let connections = 0; connections < 4; connections++) {
+                for (let connections = 0; connections < DOWNLOAD_TEST_INITIAL_CONNECTIONS; connections++) {
                     openServerConnection(bestServer);
                 }
             }
 
             // Start load latency test
             const socketClient = createSocketClient(bestServer.host);
-            const pingTest = this.measurePing(socketClient, testUUID, -1, 15, true);
+            const pingTest = this.measurePing(socketClient, testUUID, DOWNLOAD_LATENCY_TEST_REQUESTS, DOWNLOAD_LATENCY_TEST_TIMEOUT, true);
 
             const checkInterval = setInterval(async () => {
                 const now = Date.now();
@@ -373,14 +395,14 @@ export class Ookla {
 
                 // Calculate current progress in percents
                 const elapsedTotalTime = now - startTime;
-                const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / (DOWNLOAD_TEST_DURATION * 1_000)) * 100));
                 if (this.options.debug) {
                     console.debug(`Download test progress: ${ progressPercentage }%`);
                 }
 
                 // Check whether additional connections should be opened
                 if (progressPercentage < 50) {
-                    const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
+                    const recommendedConnections = Math.ceil(bandwidthInBytes / DOWNLOAD_TEST_SCALING_RATIO);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
                         let server: OAMeasurementServer;
@@ -395,7 +417,7 @@ export class Ookla {
                         openServerConnection(server);
                     }
                 } else if (progressPercentage < 100) {
-                    const additionalConnections = 4 - activeConnections;
+                    const additionalConnections = DOWNLOAD_TEST_INITIAL_CONNECTIONS - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
                         let server: OAMeasurementServer;
                         if (multiConnectionTest) {
@@ -425,7 +447,7 @@ export class Ookla {
                         jitter: jitter,
                         speed: Number(convertedSpeed.toFixed(2)),
                         servers: (multiConnectionTest) ? servers : [ bestServer ],
-                        totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
+                        totalTime: Number((elapsedTotalTime / 1_000).toFixed(1))
                     });
                 }
             }, 750);
@@ -450,7 +472,7 @@ export class Ookla {
             ws.on("open", () => {
                 ws.send(`HI ${ uuid }`);
                 ws.send("UPLOAD_STATS 15000 50 0");
-                autoClose = setTimeout(() => ws.close, timeout * 1000);
+                autoClose = setTimeout(() => ws.close, timeout * 1_000);
             });
 
             ws.on("message", (data) => {
@@ -495,11 +517,11 @@ export class Ookla {
 
         // Handler for opening new connections
         const openServerConnection = () => {
-            if (activeConnections >= 6) {
+            if (activeConnections >= UPLOAD_TEST_MAX_CONNECTIONS) {
                 return;
             }
 
-            const data = new Blob([ new Uint8Array(25_000_000) ]);
+            const data = new Blob([ new Uint8Array(UPLOAD_TEST_SIZE) ]);
             increaseConnections();
             const uploadUrl = `https://${ bestServer.host }/upload?nocache=${ Math.random() }&guid=${ testUUID }`;
             createPostRequest(uploadUrl, data, abortSignal).then(decreaseConnections).catch(decreaseConnections);
@@ -515,15 +537,15 @@ export class Ookla {
 
             // Start upload stats gathering
             const statsSocketClient = createSocketClient(bestServer.host);
-            this.startUploadStatsListener(statsSocketClient, testUUID, 20, (deliveredBytes) => sampleBytes += deliveredBytes).then(() => {
+            this.startUploadStatsListener(statsSocketClient, testUUID, UPLOAD_STATS_LISTENER_TIMEOUT, (deliveredBytes) => sampleBytes += deliveredBytes).then(() => {
                 // Open initial connections to the best server
-                for (let connections = 0; connections < 4; connections++) {
+                for (let connections = 0; connections < UPLOAD_TEST_INITIAL_CONNECTIONS; connections++) {
                     openServerConnection();
                 }
 
                 // Start load latency test
                 const latencySocketClient = createSocketClient(bestServer.host);
-                const pingTest = this.measurePing(latencySocketClient, testUUID, -1, 15, true);
+                const pingTest = this.measurePing(latencySocketClient, testUUID, UPLOAD_LATENCY_TEST_REQUESTS, UPLOAD_LATENCY_TEST_TIMEOUT, true);
 
                 const checkInterval = setInterval(async () => {
                     const now = Date.now();
@@ -539,20 +561,20 @@ export class Ookla {
 
                     // Calculate current progress in percents
                     const elapsedTotalTime = now - startTime;
-                    const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / 15_000) * 100));
+                    const progressPercentage = Math.min(100, Math.floor((elapsedTotalTime / (UPLOAD_TEST_DURATION * 1_000)) * 100));
                     if (this.options.debug) {
                         console.debug(`Upload test progress: ${ progressPercentage }%`);
                     }
 
                     // Check whether additional connections should be opened
                     if (progressPercentage < 50) {
-                        const recommendedConnections = Math.ceil(bandwidthInBytes / 750_000);
+                        const recommendedConnections = Math.ceil(bandwidthInBytes / UPLOAD_TEST_SCALING_RATIO);
                         const additionalConnections = recommendedConnections - activeConnections;
                         for (let connections = 0; connections < additionalConnections; connections++) {
                             openServerConnection();
                         }
                     } else if (progressPercentage < 100) {
-                        const additionalConnections = 4 - activeConnections;
+                        const additionalConnections = UPLOAD_TEST_INITIAL_CONNECTIONS - activeConnections;
                         for (let connections = 0; connections < additionalConnections; connections++) {
                             openServerConnection();
                         }
@@ -574,7 +596,7 @@ export class Ookla {
                             jitter: jitter,
                             speed: Number(convertedSpeed.toFixed(2)),
                             servers: [ bestServer ],
-                            totalTime: Number((elapsedTotalTime / 1000).toFixed(1))
+                            totalTime: Number((elapsedTotalTime / 1_000).toFixed(1))
                         });
                     }
                 }, 750);
