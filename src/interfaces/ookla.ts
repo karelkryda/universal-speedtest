@@ -24,7 +24,7 @@ interface OAConfigClient {
     country: string;
 }
 
-export interface OAMeasurementServer {
+export interface OAServer {
     id: number;
     host: string;
     name: string;
@@ -34,6 +34,9 @@ export interface OAMeasurementServer {
     country: string;
     cc: string;
     sponsor: string;
+}
+
+export interface OAMeasurementServer extends OAServer {
     latency: number;
     activeConnections: number;
 }

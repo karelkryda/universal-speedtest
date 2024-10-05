@@ -8,6 +8,7 @@ import {
     OAMeasurementServer,
     OAPingResult,
     OAResult,
+    OAServer,
     OAUploadResult,
     SpeedUnits,
     USOptions
@@ -61,9 +62,9 @@ export class Ookla {
     /**
      * Lists Ookla test servers.
      * @param serversToFetch - Number of test servers to fetch
-     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     * @returns {Promise<OAServer[]>} Ookla test servers
      */
-    public async listServers(serversToFetch?: number): Promise<OAMeasurementServer[]> {
+    public async listServers(serversToFetch?: number): Promise<OAServer[]> {
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&limit=${ serversToFetch || DEFAULT_SERVER_LIST_SIZE }&https_functional=true`;
         return this.getServersList(serversUrl);
     }
@@ -72,9 +73,9 @@ export class Ookla {
      * Searches Ookla test servers based on search term.
      * @param searchTerm - Search term
      * @param serversToFetch - Number of test servers to fetch
-     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     * @returns {Promise<OAServer[]>} Ookla test servers
      */
-    public async searchServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]> {
+    public async searchServers(searchTerm: string, serversToFetch?: number): Promise<OAServer[]> {
         const serversUrl = `https://www.speedtest.net/api/js/servers?engine=js&search=${ searchTerm }&limit=${ serversToFetch || DEFAULT_SERVER_LIST_SIZE }&https_functional=true`;
         return this.getServersList(serversUrl);
     }
@@ -83,14 +84,14 @@ export class Ookla {
      * Returns a list of Ookla test servers.
      * @param serversUrl - URL to fetch servers from
      * @private
-     * @returns {Promise<OAMeasurementServer[]>} List of available servers
+     * @returns {Promise<OAServer[]>} List of available servers
      */
-    private async getServersList(serversUrl: string): Promise<OAMeasurementServer[]> {
+    private async getServersList(serversUrl: string): Promise<OAServer[]> {
         try {
             const response = await createGetRequest(serversUrl);
             const body = await response.text();
 
-            const servers: OAMeasurementServer[] = JSON.parse(body);
+            const servers: OAServer[] = JSON.parse(body);
             servers.forEach(server => {
                 // Convert info to correct types
                 server.id = Number(server.id);
@@ -112,7 +113,7 @@ export class Ookla {
      * @param server - Test server to be used for measurement
      * @returns {Promise<OAResult>} Results of the Ookla test
      */
-    public async runTest(server?: OAMeasurementServer): Promise<OAResult> {
+    public async runTest(server?: OAServer): Promise<OAResult> {
         const testUUID = randomUUID();
         const multiConnectionTest = !server && (this.options.ooklaOptions.connections === "multi");
         const testStartTime = Date.now();
@@ -125,9 +126,10 @@ export class Ookla {
         }
 
         // Get available servers and the fastest server(s)
-        const servers: OAMeasurementServer[] = await this.prepareTestServers();
-        const bestServers: OAMeasurementServer[] = await this.getBestServers(servers);
-        const bestServer: OAMeasurementServer = server || bestServers.at(0);
+        const servers: OAServer[] = (server) ? [ server ] : await this.listServers(this.options.ooklaOptions.serversToFetch);
+        const measurementServers: OAMeasurementServer[] = await this.prepareTestServers(servers);
+        const bestServers: OAMeasurementServer[] = await this.getBestServers(measurementServers);
+        const bestServer: OAMeasurementServer = bestServers.at(0);
         if (this.options.debug) {
             if (multiConnectionTest) {
                 console.debug("Selected servers are:");
@@ -197,33 +199,32 @@ export class Ookla {
 
     /**
      * Returns a list of the ten nearest speedtest.net servers with their latency.
+     * @param servers List of available test servers
      * @private
      * @returns {Promise<OAMeasurementServer[]>} List of available servers
      */
-    private async prepareTestServers(): Promise<OAMeasurementServer[]> {
+    private async prepareTestServers(servers: OAServer[]): Promise<OAMeasurementServer[]> {
+        const measurementServers: OAMeasurementServer[] = [];
         let testsInProgress = 0;
-        try {
-            const servers = await this.listServers(this.options.ooklaOptions.serversToFetch);
-            return new Promise(resolve => {
-                servers.forEach(server => {
-                    server.activeConnections = 0;
+        return new Promise(resolve => {
+            servers.forEach(server => {
+                const measurementServer = server as OAMeasurementServer;
+                measurementServer.activeConnections = 0;
 
-                    // Measure server latency in parallel
-                    testsInProgress++;
-                    const socketClient = createSocketClient(server.host);
-                    this.measurePing(socketClient, null, SERVER_LATENCY_TEST_REQUESTS, SERVER_LATENCY_TEST_TIMEOUT, false).then(({ latency }) => {
-                        server.latency = latency;
-                        testsInProgress--;
+                // Measure server latency in parallel
+                testsInProgress++;
+                const socketClient = createSocketClient(measurementServer.host);
+                this.measurePing(socketClient, null, SERVER_LATENCY_TEST_REQUESTS, SERVER_LATENCY_TEST_TIMEOUT, false).then(({ latency }) => {
+                    measurementServer.latency = latency;
+                    measurementServers.push(measurementServer);
+                    testsInProgress--;
 
-                        if (testsInProgress === 0) {
-                            resolve(servers);
-                        }
-                    });
+                    if (testsInProgress === 0) {
+                        resolve(measurementServers);
+                    }
                 });
             });
-        } catch {
-            throw new Error("An error occurred while retrieving the server list from speedtest.net.");
-        }
+        });
     }
 
     /**
