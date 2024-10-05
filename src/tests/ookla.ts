@@ -413,7 +413,7 @@ export class Ookla {
                 }
 
                 // Check whether additional connections should be opened
-                if (progressPercentage < 50) {
+                if (multiConnectionTest && progressPercentage < 50) {
                     const recommendedConnections = Math.ceil(bandwidthInBytes / DOWNLOAD_TEST_SCALING_RATIO);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
