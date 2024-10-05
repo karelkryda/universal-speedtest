@@ -361,6 +361,17 @@ export class Ookla {
             }).catch(() => decreaseConnections(server));
         };
 
+        // Returns the least utilized server using round-robin.
+        const selectNextConnectionServer = (): OAMeasurementServer => {
+            if (!multiConnectionTest) {
+                return bestServer;
+            }
+
+            return servers
+                .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
+                .at(0);
+        };
+
         // Perform download speed measurement
         return new Promise((resolve) => {
             const now = Date.now();
@@ -406,29 +417,13 @@ export class Ookla {
                     const recommendedConnections = Math.ceil(bandwidthInBytes / DOWNLOAD_TEST_SCALING_RATIO);
                     const additionalConnections = recommendedConnections - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
-                        let server: OAMeasurementServer;
-                        if (multiConnectionTest) {
-                            server = servers
-                                .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
-                                .at(0);
-                        } else {
-                            server = bestServer;
-                        }
-
+                        const server = selectNextConnectionServer();
                         openServerConnection(server);
                     }
                 } else if (progressPercentage < 100) {
                     const additionalConnections = DOWNLOAD_TEST_INITIAL_CONNECTIONS - activeConnections;
                     for (let connections = 0; connections < additionalConnections; connections++) {
-                        let server: OAMeasurementServer;
-                        if (multiConnectionTest) {
-                            server = servers
-                                .sort((serverA, serverB) => serverA.activeConnections - serverB.activeConnections)
-                                .at(0);
-                        } else {
-                            server = bestServer;
-                        }
-
+                        const server = selectNextConnectionServer();
                         openServerConnection(server);
                     }
                 } else if (progressPercentage === 100) {
