@@ -1,8 +1,8 @@
 export interface OoklaOptions {
-    /** Perform Ookla test against multiple servers. */
-    multiTest?: true;
     /** Number of Ookla test servers to fetch. */
     serversToFetch?: number;
+    /** Perform Ookla test against single or multiple servers. */
+    connections?: "single" | "multi";
     /** Technology used to perform the test. */
     technology?: "http";
 }
@@ -19,7 +19,7 @@ interface OAConfigClient {
     ispulavg: number;
     country: string;
 }
-export interface OAMeasurementServer {
+export interface OAServer {
     id: number;
     host: string;
     name: string;
@@ -29,6 +29,8 @@ export interface OAMeasurementServer {
     country: string;
     cc: string;
     sponsor: string;
+}
+export interface OAMeasurementServer extends OAServer {
     latency: number;
     activeConnections: number;
 }
@@ -41,6 +43,7 @@ export interface OADownloadResult {
     latency: number;
     jitter: number;
     speed: number;
+    servers: OAMeasurementServer[];
     totalTime: number;
 }
 export interface OAUploadResult {
@@ -48,6 +51,7 @@ export interface OAUploadResult {
     latency: number;
     jitter: number;
     speed: number;
+    servers: OAMeasurementServer[];
     totalTime: number;
 }
 export interface OAResult {

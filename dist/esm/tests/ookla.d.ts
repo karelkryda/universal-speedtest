@@ -1,4 +1,4 @@
-import { OAMeasurementServer, OAResult, USOptions } from "../interfaces/index.js";
+import { OAResult, OAServer, USOptions } from "../interfaces/index.js";
 /**
  * Ookla Speedtest test.
  */
@@ -10,17 +10,31 @@ export declare class Ookla {
      */
     constructor(options: USOptions);
     /**
+     * Lists Ookla test servers.
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAServer[]>} Ookla test servers
+     */
+    listServers(serversToFetch?: number): Promise<OAServer[]>;
+    /**
      * Searches Ookla test servers based on search term.
      * @param searchTerm - Search term
      * @param serversToFetch - Number of test servers to fetch
-     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     * @returns {Promise<OAServer[]>} Ookla test servers
      */
-    searchServers(searchTerm: string, serversToFetch?: number): Promise<OAMeasurementServer[]>;
+    searchServers(searchTerm: string, serversToFetch?: number): Promise<OAServer[]>;
+    /**
+     * Returns a list of Ookla test servers.
+     * @param serversUrl - URL to fetch servers from
+     * @private
+     * @returns {Promise<OAServer[]>} List of available servers
+     */
+    private getServersList;
     /**
      * Performs the Ookla Speedtest measurement.
+     * @param server - Test server to be used for measurement
      * @returns {Promise<OAResult>} Results of the Ookla test
      */
-    run(): Promise<OAResult>;
+    runTest(server?: OAServer): Promise<OAResult>;
     /**
      * Retrieves the configuration for speedtest.net test.
      * @private
@@ -29,11 +43,11 @@ export declare class Ookla {
     private getConfig;
     /**
      * Returns a list of the ten nearest speedtest.net servers with their latency.
-     * @param {DistanceUnits} distanceUnit - Preferred unit of distance value
+     * @param servers List of available test servers
      * @private
      * @returns {Promise<OAMeasurementServer[]>} List of available servers
      */
-    private getServersList;
+    private prepareTestServers;
     /**
      * Returns four servers with the lowest latency.
      * @param {OAMeasurementServer[]} servers - List of available servers
@@ -57,18 +71,11 @@ export declare class Ookla {
      * @param {OAMeasurementServer[]} servers - All available measurement servers
      * @param {OAMeasurementServer} bestServer - The best measurement server
      * @param {string} testUUID - Generated UUID for this test
+     * @param {boolean} multiConnectionTest - Whether measurement should use single multiple servers
      * @private
      * @returns {Promise<OADownloadResult>} Download speed measurement result
      */
     private measureDownloadSpeed;
-    /**
-     * Returns data stream for upload test.
-     * @param chunkSize - size of each stream chunk
-     * @param controllerCreated - callback to return newly created stream controller
-     * @private
-     * @returns {ReadableStream} Continuous data stream
-     */
-    private createStream;
     /**
      * Reads upload test statistics and continuously reports number of transferred bytes.
      * @param {WebSocket} ws - WebSocket connection

@@ -32,18 +32,27 @@ class UniversalSpeedTest {
                 ...options?.units
             },
             ooklaOptions: {
-                multiTest: true,
                 serversToFetch: 10,
+                connections: "multi",
                 technology: "http",
                 ...options?.ooklaOptions
             }
         };
     }
     /**
+     * Lists Ookla test servers.
+     * @param serversToFetch - Number of test servers to fetch
+     * @returns {Promise<OAServer[]>} Ookla test servers
+     */
+    listOoklaServers(serversToFetch) {
+        const ooklaTest = new index_js_3.Ookla(this.options);
+        return ooklaTest.listServers(serversToFetch);
+    }
+    /**
      * Searches Ookla test servers based on search term.
      * @param searchTerm - Search term
      * @param serversToFetch - Number of test servers to fetch
-     * @returns {Promise<OAMeasurementServer[]>} Ookla test servers
+     * @returns {Promise<OAServer[]>} Ookla test servers
      */
     searchOoklaServers(searchTerm, serversToFetch) {
         const ooklaTest = new index_js_3.Ookla(this.options);
@@ -51,11 +60,12 @@ class UniversalSpeedTest {
     }
     /**
      * Performs speedtest using Ookla servers.
+     * @param server - Test server to be used for measurement
      * @returns {Promise<OAResult>} Ookla test result
      */
-    performOoklaTest() {
+    performOoklaTest(server) {
         const ooklaTest = new index_js_3.Ookla(this.options);
-        return ooklaTest.run();
+        return ooklaTest.runTest(server);
     }
 }
 exports.UniversalSpeedTest = UniversalSpeedTest;

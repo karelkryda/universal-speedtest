@@ -7,7 +7,7 @@ exports.parseXML = parseXML;
 const ws_1 = require("ws");
 const fast_xml_parser_1 = require("fast-xml-parser");
 const index_js_1 = require("../interfaces/index.js");
-const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/3.0.0-rc.0";
+const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/3.0.0-rc.1";
 /**
  * Creates a fetch GET request.
  * @param url - URL address

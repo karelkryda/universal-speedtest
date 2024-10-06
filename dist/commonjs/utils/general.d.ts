@@ -13,7 +13,7 @@ export declare function createGetRequest(url: string, abortSignal?: AbortSignal)
  * @param abortSignal - request abort signal
  * @returns {Promise<Response>} fetch request
  */
-export declare function createPostRequest(url: string, body: ReadableStream, abortSignal?: AbortSignal): Promise<Response>;
+export declare function createPostRequest(url: string, body: Blob, abortSignal?: AbortSignal): Promise<Response>;
 /**
  * Creates a WebSocket client connection to the specified server.
  * @param {string} host - Server to send requests to
