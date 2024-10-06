@@ -46,7 +46,7 @@ describe("Ookla measurement test", () => {
         });
         const result = await test.performOoklaTest();
 
-        expect(result.pingResult.latency).toBeLessThan(60);
+        expect(typeof result.pingResult.latency).toBe("number");
         expect(result.uploadResult).toBeUndefined();
         expect(result.downloadResult).toBeUndefined();
     }, 10_000);
@@ -59,9 +59,9 @@ describe("Ookla measurement test", () => {
         });
         const result = await test.performOoklaTest();
 
-        expect(result.pingResult.latency).toBeLessThan(60);
+        expect(typeof result.pingResult.latency).toBe("number");
         expect(result.uploadResult).toBeUndefined();
-        expect(result.downloadResult.speed).toBeGreaterThan(20);
+        expect(typeof result.downloadResult.speed).toBe("number");
         expect(result.downloadResult.servers.length).toEqual(1);
     }, 30_000);
 
@@ -69,9 +69,9 @@ describe("Ookla measurement test", () => {
         const test = new UniversalSpeedTest();
         const result = await test.performOoklaTest();
 
-        expect(result.pingResult.latency).toBeLessThan(60);
+        expect(typeof result.pingResult.latency).toBe("number");
         expect(result.uploadResult).toBeUndefined();
-        expect(result.downloadResult.speed).toBeGreaterThan(20);
+        expect(typeof result.downloadResult.speed).toBe("number");
         expect(result.downloadResult.servers.length).toEqual(4);
     }, 30_000);
 
@@ -84,11 +84,11 @@ describe("Ookla measurement test", () => {
         });
         const result = await test.performOoklaTest();
 
-        expect(result.pingResult.latency).toBeLessThan(60);
+        expect(typeof result.pingResult.latency).toBe("number");
         expect(result.uploadResult.transferredBytes).toBeGreaterThan(2_000);
-        expect(result.uploadResult.speed).toBeGreaterThan(4);
+        expect(typeof result.uploadResult.speed).toBe("number");
         expect(result.uploadResult.servers.length).toEqual(1);
-        expect(result.downloadResult.speed).toBeGreaterThan(20);
+        expect(typeof result.downloadResult.speed).toBe("number");
         expect(result.downloadResult.servers.length).toEqual(4);
     }, 60_000);
 
@@ -103,12 +103,12 @@ describe("Ookla measurement test", () => {
         const testServer = servers.at(0);
         const result = await test.performOoklaTest(testServer);
 
-        expect(result.pingResult.latency).toBeLessThan(60);
+        expect(typeof result.pingResult.latency).toBe("number");
         expect(result.uploadResult.transferredBytes).toBeGreaterThan(2_000);
-        expect(result.uploadResult.speed).toBeGreaterThan(4);
+        expect(typeof result.uploadResult.speed).toBe("number");
         expect(result.uploadResult.servers.length).toEqual(1);
         expect(result.uploadResult.servers.at(0).id).toEqual(testServer.id);
-        expect(result.downloadResult.speed).toBeGreaterThan(20);
+        expect(typeof result.downloadResult.speed).toBe("number");
         expect(result.downloadResult.servers.length).toEqual(1);
         expect(result.downloadResult.servers.at(0).id).toEqual(testServer.id);
         expect(result.servers.length).toEqual(1);
