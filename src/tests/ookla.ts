@@ -37,6 +37,7 @@ import {
 } from "../constants/ookla.js";
 import {
     average,
+    calculateIqm,
     convertMilesToKilometers,
     convertSpeedUnit,
     createGetRequest,
@@ -268,7 +269,7 @@ export class Ookla {
                 const message = data.toString();
                 if (message.includes("PONG")) {
                     // Ignore first ping
-                    if (testNumber !== 0) {
+                    if (testNumber >= 1) {
                         const latency = Date.now() - requestStartTime;
                         latencies.push(latency);
 
@@ -294,7 +295,7 @@ export class Ookla {
 
             ws.on("close", () => {
                 clearTimeout(autoClose);
-                const serverLatency = average(latencies, 2);
+                const serverLatency = calculateIqm(latencies, 2);
                 const serverJitter = calculateJitter ? average(jitters, 2) : null;
 
                 resolve({
