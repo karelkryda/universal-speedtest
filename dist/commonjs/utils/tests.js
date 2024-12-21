@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.average = average;
+exports.calculateIqm = calculateIqm;
 exports.convertMilesToKilometers = convertMilesToKilometers;
 exports.convertSpeedUnit = convertSpeedUnit;
 const convert_1 = require("convert");
@@ -15,14 +16,35 @@ function sum(values) {
 /**
  * Returns average value from given values.
  * @param {number[]} values - Values to calculate average from
- * @param {number} decimalPoints - Maximum number of decimal points
+ * @param {number|undefined} decimalPoints - Maximum number of decimal points
  * @private
  * @returns {number} The average value
  */
 function average(values, decimalPoints) {
     const valuesSum = sum(values);
     const averageValue = valuesSum / values.length;
-    return Number(averageValue.toFixed(decimalPoints));
+    if (decimalPoints) {
+        return Number(averageValue.toFixed(decimalPoints));
+    }
+    return averageValue;
+}
+/**
+ * Returns IQM from given values.
+ * @param {number[]} values - Values to calculate IQM from
+ * @param {number|number} decimalPoints - Maximum number of decimal points
+ * @private
+ * @returns {number} The IQM value
+ */
+function calculateIqm(values, decimalPoints) {
+    const sortedValues = values.sort((a, b) => a - b);
+    const lowerQuartileIndex = Math.floor(sortedValues.length * 0.25);
+    const upperQuartileIndex = Math.ceil(sortedValues.length * 0.75);
+    const valuesIqm = sortedValues.slice(lowerQuartileIndex, upperQuartileIndex);
+    const iqm = average(valuesIqm);
+    if (decimalPoints) {
+        return Number(iqm.toFixed(decimalPoints));
+    }
+    return iqm;
 }
 /**
  * Converts miles to kilometers.

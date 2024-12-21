@@ -209,7 +209,7 @@ class Ookla {
                 const message = data.toString();
                 if (message.includes("PONG")) {
                     // Ignore first ping
-                    if (testNumber !== 0) {
+                    if (testNumber >= 1) {
                         const latency = Date.now() - requestStartTime;
                         latencies.push(latency);
                         // Calculate jitter from second ping
@@ -233,7 +233,7 @@ class Ookla {
             });
             ws.on("close", () => {
                 clearTimeout(autoClose);
-                const serverLatency = (0, index_js_2.average)(latencies, 2);
+                const serverLatency = (0, index_js_2.calculateIqm)(latencies, 2);
                 const serverJitter = calculateJitter ? (0, index_js_2.average)(jitters, 2) : null;
                 resolve({
                     latency: serverLatency,

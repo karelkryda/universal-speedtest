@@ -2,11 +2,19 @@ import { SpeedUnits } from "../interfaces/index.js";
 /**
  * Returns average value from given values.
  * @param {number[]} values - Values to calculate average from
- * @param {number} decimalPoints - Maximum number of decimal points
+ * @param {number|undefined} decimalPoints - Maximum number of decimal points
  * @private
  * @returns {number} The average value
  */
-export declare function average(values: number[], decimalPoints: number): number;
+export declare function average(values: number[], decimalPoints?: number): number;
+/**
+ * Returns IQM from given values.
+ * @param {number[]} values - Values to calculate IQM from
+ * @param {number|number} decimalPoints - Maximum number of decimal points
+ * @private
+ * @returns {number} The IQM value
+ */
+export declare function calculateIqm(values: number[], decimalPoints?: number): number;
 /**
  * Converts miles to kilometers.
  * @param distance Current distance in miles

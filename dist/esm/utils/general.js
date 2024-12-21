@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import { HttpMethods } from "../interfaces/index.js";
-const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/3.0.0-rc.1";
+const USER_AGENT = "Mozilla/5.0 (" + process.platform + "; U; " + process.arch + "; en-us) TypeScript/" + process.version + " (KHTML, like Gecko) UniversalSpeedTest/3.0.0";
 /**
  * Creates a fetch GET request.
  * @param url - URL address

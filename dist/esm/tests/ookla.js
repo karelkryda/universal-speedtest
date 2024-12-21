@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { clearInterval } from "node:timers";
 import { DistanceUnits, SpeedUnits } from "../interfaces/index.js";
 import { DEFAULT_SERVER_LIST_SIZE, DOWNLOAD_LATENCY_TEST_REQUESTS, DOWNLOAD_LATENCY_TEST_TIMEOUT, DOWNLOAD_TEST_DURATION, DOWNLOAD_TEST_INITIAL_CONNECTIONS, DOWNLOAD_TEST_MAX_CONNECTIONS, DOWNLOAD_TEST_SCALING_RATIO, DOWNLOAD_TEST_SIZE, LATENCY_TEST_REQUESTS, LATENCY_TEST_TIMEOUT, SERVER_LATENCY_TEST_REQUESTS, SERVER_LATENCY_TEST_TIMEOUT, UPLOAD_LATENCY_TEST_REQUESTS, UPLOAD_LATENCY_TEST_TIMEOUT, UPLOAD_STATS_LISTENER_TIMEOUT, UPLOAD_TEST_DURATION, UPLOAD_TEST_INITIAL_CONNECTIONS, UPLOAD_TEST_MAX_CONNECTIONS, UPLOAD_TEST_SCALING_RATIO, UPLOAD_TEST_SIZE } from "../constants/ookla.js";
-import { average, convertMilesToKilometers, convertSpeedUnit, createGetRequest, createPostRequest, createSocketClient, parseXML } from "../utils/index.js";
+import { average, calculateIqm, convertMilesToKilometers, convertSpeedUnit, createGetRequest, createPostRequest, createSocketClient, parseXML } from "../utils/index.js";
 /**
  * Ookla Speedtest test.
  */
@@ -206,7 +206,7 @@ export class Ookla {
                 const message = data.toString();
                 if (message.includes("PONG")) {
                     // Ignore first ping
-                    if (testNumber !== 0) {
+                    if (testNumber >= 1) {
                         const latency = Date.now() - requestStartTime;
                         latencies.push(latency);
                         // Calculate jitter from second ping
@@ -230,7 +230,7 @@ export class Ookla {
             });
             ws.on("close", () => {
                 clearTimeout(autoClose);
-                const serverLatency = average(latencies, 2);
+                const serverLatency = calculateIqm(latencies, 2);
                 const serverJitter = calculateJitter ? average(jitters, 2) : null;
                 resolve({
                     latency: serverLatency,
